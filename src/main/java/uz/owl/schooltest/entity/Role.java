@@ -1,12 +1,12 @@
 package uz.owl.schooltest.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +25,7 @@ public class Role {
     private String rolename;
 
     @ManyToMany
+    @JsonIgnore
     private final List<User> users = new ArrayList<>();
 
     @Override

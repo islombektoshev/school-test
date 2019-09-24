@@ -25,4 +25,14 @@ public class Guruh {
     @OneToMany(mappedBy = "guruh")
     private final List<Student> students = new ArrayList<>();
 
+    @ManyToMany
+    private final List<BlockTest> blockTests = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "Guruh{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

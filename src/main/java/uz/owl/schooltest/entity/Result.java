@@ -18,9 +18,16 @@ public class Result {
     @ManyToOne
     private Student student;
 
-    @ManyToOne
-    private BlockTest blockTest;
-
     private String correctKey;
     private String choosenKey;
+
+    @Override
+    public String toString() {
+        return "Result{" +
+                "id=" + id +
+                ", student=" + student +
+                ", correctKey='" + correctKey + '\'' +
+                ", choosenKey='" + choosenKey + '\'' +
+                '}';
+    }
 }

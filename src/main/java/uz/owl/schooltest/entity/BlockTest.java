@@ -17,9 +17,10 @@ public class BlockTest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(nullable = false)
     private String name;
+    @ColumnDefault("30")
+    private int countOfQuestion;
 
     @ManyToOne
     private SCenter scenter;
@@ -28,12 +29,17 @@ public class BlockTest {
     private final List<Student> students = new ArrayList<>();
 
     @ManyToMany(mappedBy = "blockTests")
+    private final List<Guruh> guruhs = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "blockTests")
     private final List<Subject> subjects = new ArrayList<>();
 
-    @OneToMany(mappedBy = "blockTest", cascade = CascadeType.ALL)
-    private final List<Result> results = new ArrayList<>();
-
-    @ColumnDefault("30")
-    private int countOfQuestion;
-
+    @Override
+    public String toString() {
+        return "BlockTest{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", countOfQuestion=" + countOfQuestion +
+                '}';
+    }
 }

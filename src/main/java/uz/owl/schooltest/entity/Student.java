@@ -18,10 +18,6 @@ public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-//    @Column(nullable = false, unique = true)
-//    private String username;
-
     private String firstname;
     private String lastname;
 
@@ -31,10 +27,21 @@ public class Student {
     @ManyToOne(cascade = CascadeType.PERSIST)
     private Guruh guruh;
 
+    @ManyToMany(mappedBy = "students")
+    private final List<Subject> subjects = new ArrayList<>();
+
     @ManyToMany(cascade = CascadeType.PERSIST)
     private final List<BlockTest> blockTests = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "student", cascade = CascadeType.ALL)
     private final List<Result> results = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                '}';
+    }
 }

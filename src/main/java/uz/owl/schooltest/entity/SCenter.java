@@ -14,18 +14,19 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "scenter", uniqueConstraints = @UniqueConstraint(columnNames = {"name","author_id"}))
 public class SCenter {
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "name", nullable = false)
     private String name;
-
 
     private String caption;
 
     @ManyToOne
+    @JoinColumn(name = "author_id")
     private User author;
 
     @OneToMany(mappedBy = "scenter")
@@ -40,4 +41,12 @@ public class SCenter {
     @OneToMany(mappedBy = "scenter")
     private final List<Student> students = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return "SCenter{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", caption='" + caption + '\'' +
+                '}';
+    }
 }
