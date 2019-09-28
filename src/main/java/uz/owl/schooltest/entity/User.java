@@ -43,7 +43,7 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     private final List<Role> roles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "author")
+    @OneToMany(mappedBy = "author", cascade = {CascadeType.MERGE, CascadeType.REMOVE, CascadeType.PERSIST})
     private final List<SCenter> sCenters = new ArrayList<>();
 
     @Override

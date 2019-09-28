@@ -1,12 +1,14 @@
-package uz.owl.schooltest.dto;
+package uz.owl.schooltest.dto.blocktest;
 
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 
 @Data
-public class SCenterPayload {
+public class BlockTestPayload {
     @NotNull
     private String name;
-    private String caption;
+
+
+    private Integer countOfQuestion;
 }

@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uz.owl.schooltest.dao.UserDao;
 import uz.owl.schooltest.entity.User;
+import uz.owl.schooltest.exception.UserNotFoundException;
 
 import javax.transaction.Transactional;
 
@@ -33,5 +34,14 @@ public class UserService implements UserDetailsService {
         return byUsername;
     }
 
+    User getUser(String username, String s) throws UserNotFoundException {
+        User user = findByUsername(username);
+        if (user == null) throw new UserNotFoundException(s, username);
+        return user;
+    }
+
+    User getUser(String username) throws UserNotFoundException {
+        return getUser(username, "User not found");
+    }
 
 }

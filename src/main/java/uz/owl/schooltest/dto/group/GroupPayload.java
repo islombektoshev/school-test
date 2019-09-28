@@ -1,4 +1,4 @@
-package uz.owl.schooltest.dto;
+package uz.owl.schooltest.dto.group;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,12 +1,12 @@
-package uz.owl.schooltest.dto;
+package uz.owl.schooltest.dto.blocktest;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class SCenterDto {
+public class BlockTestDto {
     private Long id;
     private String name;
-    private String caption;
+    private int countOfQuestion;
 }

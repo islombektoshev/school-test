@@ -15,8 +15,5 @@ public interface SubjectDao extends CrudRepository<Subject, Long> {
     Subject findByScenterAndName(SCenter sCenter, String  subjectname);
 
     void deleteByScenterAndName(SCenter sCenter, String  subjectname);
-
-//
-//    @Query("select s from Subject s where s.scenter.name=")
-//    List<Subject> findAllByScenter(String username, String Centername);
+    List<Subject> findAllByScenterAndPrimarySubject(SCenter sCenter, boolean b);
 }

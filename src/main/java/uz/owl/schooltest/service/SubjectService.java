@@ -2,20 +2,24 @@ package uz.owl.schooltest.service;
 
 import org.springframework.stereotype.Service;
 import uz.owl.schooltest.dao.SubjectDao;
-import uz.owl.schooltest.dto.AddSubjectPayload;
-import uz.owl.schooltest.dto.SubjectDto;
+import uz.owl.schooltest.dto.subject.SubjectPayload;
+import uz.owl.schooltest.dto.subject.SubjectDto;
 import uz.owl.schooltest.entity.SCenter;
+import uz.owl.schooltest.entity.Student;
 import uz.owl.schooltest.entity.Subject;
 import uz.owl.schooltest.entity.User;
 import uz.owl.schooltest.exception.CenterNotFoundException;
 import uz.owl.schooltest.exception.CoundtCreatedExeption;
+import uz.owl.schooltest.exception.NotFoudException;
 import uz.owl.schooltest.exception.UserNotFoundException;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class SubjectService {
+
     private final SubjectDao subjectDao;
     private final UserService userService;
     private final SCenterService sCenterService;
@@ -26,11 +30,11 @@ public class SubjectService {
         this.sCenterService = sCenterService;
     }
 
-    public SubjectDto saveSubject(String username, AddSubjectPayload addSubjectPayload) throws UserNotFoundException, CenterNotFoundException, CoundtCreatedExeption {
+    public SubjectDto saveSubject(String username, SubjectPayload subjectPayload) throws UserNotFoundException, CenterNotFoundException, CoundtCreatedExeption {
         Subject subject = Subject.builder()
-                .name(addSubjectPayload.getName())
-                .primarySubject(addSubjectPayload.isPrimary())
-                .scenter(sCenterService.getByAuthorAndName(username, addSubjectPayload.getCentername()))
+                .name(subjectPayload.getName())
+                .primarySubject(subjectPayload.isPrimary())
+                .scenter(sCenterService.getByAuthorAndName(username, subjectPayload.getCentername()))
                 .build();
         System.out.println(subject);
         try {
@@ -41,63 +45,65 @@ public class SubjectService {
     }
 
     public List<SubjectDto> getSubjectByUsernameAndCentername(String username, String centername) throws UserNotFoundException, CenterNotFoundException {
-        User user = getUser(username);
-        SCenter center = getCenter(user, centername);
+        User user = userService.getUser(username);
+        SCenter center = sCenterService.getCenter(user, centername);
         List<SubjectDto> subjectDtos = subjectDao.findAllByScenter(center).stream().map(this::convertToSubjectDto).collect(Collectors.toList());
         return subjectDtos;
     }
 
     public SubjectDto getSubjectDtoByUsernameAndCenternameAndSubjectname(String username, String centername, String subjectname) throws UserNotFoundException, CenterNotFoundException {
-        User user = getUser(username);
-        SCenter center = getCenter(user, centername);
+        User user = userService.getUser(username);
+        SCenter center = sCenterService.getCenter(user, centername);
         Subject byScenterAndName = subjectDao.findByScenterAndName(center, subjectname);
+        if (byScenterAndName == null) {
+            throw new NotFoudException("Subject Not Found");
+        }
         return convertToSubjectDto(byScenterAndName);
     }
 
     /**
-     * +
      * Uddate Subject
      *
      * @param username          user username
      * @param oldSubjectName    old subject which is will be update
-     * @param addSubjectPayload data
+     * @param subjectPayload data
      * @return
      * @throws UserNotFoundException
      * @throws CenterNotFoundException
      */
-    public SubjectDto updateSubject(String username, String oldSubjectName, AddSubjectPayload addSubjectPayload) throws UserNotFoundException, CenterNotFoundException {
-        User user = getUser(username);
-        SCenter center = getCenter(user, addSubjectPayload.getCentername());
+    public SubjectDto updateSubject(String username, String oldSubjectName, SubjectPayload subjectPayload) throws UserNotFoundException, CenterNotFoundException {
+        User user = userService.getUser(username);
+        SCenter center = sCenterService.getCenter(user, subjectPayload.getCentername());
         Subject subject = subjectDao.findByScenterAndName(center, oldSubjectName); // getting subject with old name
-        subject.setName(addSubjectPayload.getName());
-        subject.setPrimarySubject(addSubjectPayload.isPrimary());
+        if (subject == null) {
+            throw new NotFoudException("Subject Not Found");
+        }
+        subject.setName(subjectPayload.getName());
+        subject.setPrimarySubject(subjectPayload.isPrimary());
         Subject newSubject = subjectDao.save(subject);
         return convertToSubjectDto(newSubject);
     }
 
+    @Transactional
     public void deleteSubject(String username, String centername, String subjectname) throws UserNotFoundException, CenterNotFoundException {
-        User user = getUser(username);
-        SCenter center = getCenter(user, centername);
+        User user = userService.getUser(username);
+        SCenter center = sCenterService.getCenter(user, centername);
+        Subject byScenterAndName = subjectDao.findByScenterAndName(center, subjectname);
+        if (byScenterAndName == null) {
+            throw new NotFoudException("Subject Not Found");
+        }
         subjectDao.deleteByScenterAndName(center, subjectname);
     }
 
-
-    private User getUser(String username, String s) throws UserNotFoundException {
-        User user = userService.findByUsername(username);
-        if (user == null) throw new UserNotFoundException(s, username);
-        return user;
+    Subject getSubjectByCenterAndName(SCenter sCenter, String name){
+        return subjectDao.findByScenterAndName(sCenter, name);
     }
 
-    private User getUser(String username) throws UserNotFoundException {
-        return getUser(username, "User not found");
+    List<Subject> getPrimarySubject(User user, SCenter center){
+        return subjectDao.findAllByScenterAndPrimarySubject(center, true);
     }
 
     SubjectDto convertToSubjectDto(Subject subject) {
         return SubjectDto.builder().name(subject.getName()).primary(subject.isPrimarySubject()).build();
-    }
-
-    private SCenter getCenter(User user, String centername) throws CenterNotFoundException {
-        SCenter byAuthorEntityAndName = sCenterService.getByAuthorEntityAndName(user, centername);
-        return byAuthorEntityAndName;
     }
 }

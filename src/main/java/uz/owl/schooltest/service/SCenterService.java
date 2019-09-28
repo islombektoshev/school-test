@@ -2,8 +2,8 @@ package uz.owl.schooltest.service;
 
 import org.springframework.stereotype.Service;
 import uz.owl.schooltest.dao.SCenterDao;
-import uz.owl.schooltest.dto.SCenterDto;
-import uz.owl.schooltest.dto.SCenterPayload;
+import uz.owl.schooltest.dto.scenter.SCenterDto;
+import uz.owl.schooltest.dto.scenter.SCenterPayload;
 import uz.owl.schooltest.entity.SCenter;
 import uz.owl.schooltest.entity.User;
 import uz.owl.schooltest.exception.CenterNotFoundException;
@@ -27,13 +27,13 @@ public class SCenterService {
     }
 
     public List<SCenterDto> findAllByUser(String username) throws UserNotFoundException {
-        User user = getUser(username, "User not found!");
+        User user = userService.getUser(username, "User not found!");
         List<SCenter> sCenters = sCenterDao.findAllByAuthor(user);
         return sCenters.stream().map(this::convertToSCenterDto).collect(Collectors.toList());
     }
 
     public SCenterDto findByAuthorAndName(String username, String sCenterName) throws UserNotFoundException, CenterNotFoundException {
-        User user = getUser(username, "User not fount");
+        User user = userService.getUser(username, "User not fount");
         SCenter byAuthorAndName = sCenterDao.findByAuthorAndName(user, sCenterName);
         if (byAuthorAndName == null){
             throw new CenterNotFoundException("Center Not Found");
@@ -41,7 +41,7 @@ public class SCenterService {
         return convertToSCenterDto(byAuthorAndName);
     }
 
-        public SCenterDto saveSCenterForUser(String username, SCenterPayload sCenterPayload) throws CoundtCreatedExeption {
+        public SCenterDto saveForUser(String username, SCenterPayload sCenterPayload) throws CoundtCreatedExeption {
         User user = userService.findByUsername(username);
 
         SCenter center = SCenter.builder()
@@ -52,13 +52,13 @@ public class SCenterService {
         try {
             sCenterDao.save(center);
         } catch (Exception e) {
-            throw new CoundtCreatedExeption("Center coundt created");
+            throw new CoundtCreatedExeption("Center could't created");
         }
         return convertToSCenterDto(center);
     }
 
     public SCenterDto update(String username,String oldname, SCenterPayload sCenterPayload) throws UserNotFoundException, CoundtUpdatedException {
-        User user = getUser(username, "User not found!");
+        User user = userService.getUser(username, "User not found!");
         SCenter center = sCenterDao.findByAuthorAndName(user, oldname);
         if (center == null) {
             throw new CoundtUpdatedException("Center not found");
@@ -69,14 +69,15 @@ public class SCenterService {
         try {
             updatedCenter = sCenterDao.save(center);
         } catch (Exception e) {
-            throw new CoundtUpdatedException("Center upted");
+            throw new CoundtUpdatedException("Center could't updated");
         }
         return convertToSCenterDto(updatedCenter);
     }
 
 
+    @Transactional
     public void deleteByAuthorAndName(String author, String name) throws UserNotFoundException {
-        User user = getUser(author);
+        User user = userService.getUser(author);
         sCenterDao.deleteByAuthorAndName(user, name);
     }
 
@@ -89,12 +90,17 @@ public class SCenterService {
     }
 
     SCenter getByAuthorAndName(String username, String sCenterName) throws CenterNotFoundException, UserNotFoundException {
-        User user = getUser(username, "User not fount");
+        User user = userService.getUser(username, "User not fount");
         SCenter byAuthorAndName = sCenterDao.findByAuthorAndName(user, sCenterName);
         if (byAuthorAndName == null){
             throw new CenterNotFoundException("Center Not Found");
         }
         return byAuthorAndName;
+    }
+
+    SCenter getCenter(User user, String centername) throws CenterNotFoundException {
+        SCenter byAuthorEntityAndName = getByAuthorEntityAndName(user, centername);
+        return byAuthorEntityAndName;
     }
 
     private SCenterDto convertToSCenterDto(SCenter sCenter) {
@@ -105,13 +111,6 @@ public class SCenterService {
                 .build();
     }
 
-    private User getUser(String username, String s) throws UserNotFoundException {
-        User user = userService.findByUsername(username);
-        if (user == null) throw new UserNotFoundException(s, username);
-        return user;
-    }
-
-    private User getUser(String username) throws UserNotFoundException {
-        return getUser(username, "User not found");
+    public void getCenter(User user) {
     }
 }

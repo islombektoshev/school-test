@@ -8,7 +8,6 @@ import lombok.Data;
 public class Message extends AbstractBaseMessage<Message>{
     private int status;
     private String message;
-
     {
         setC(this);
     }

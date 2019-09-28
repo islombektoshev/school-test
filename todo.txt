@@ -1,0 +1,71 @@
+todo Student CRUD
+todo Get Student groups
+todo Get & Add Student Subject
+todo Get Student groups
+todo BlockTest service orqali bloktestlar hosil qilish
+todo check mappedBy manimcha save dan foydlanim relitionni save qilish uchun owning site filed fa add qilish kerak
+todo structure of response of SCenterDto
+{
+
+    ... SCenterDto fields
+    _links:{
+        self:
+        subjects:
+        groups:
+        students:
+        blockTest:
+    }
+}
+
+todo structure of response of Student
+{
+    ... StudentDto fields
+    _links:{
+        self:
+        subjects:
+        groups:
+        center:
+        results:
+    }
+}
+
+todo structure of response of Groups
+{
+    ... GroupDto fields
+    _links:{
+        self:
+        center:
+        students:
+        blockTest:
+    }
+}
+
+todo structure of response of Subject
+{
+    ... SubjectDto fields
+    _links:{
+        self:
+        center:
+        blockTest:
+        students:
+    }
+}
+
+todo structure of response of BlockTest
+{
+    ... BlockTestDto field
+    _links:{
+        self:
+        center:
+        students:
+        subject:
+        groups:
+    }
+}
+
+todo student methods
+    addSubject(Subject)
+    addGroup(Group)
+
+
+

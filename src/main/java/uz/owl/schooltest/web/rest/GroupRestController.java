@@ -1,73 +1,110 @@
 package uz.owl.schooltest.web.rest;
 
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import uz.owl.schooltest.dto.GroupDto;
-import uz.owl.schooltest.dto.GroupPayload;
+import uz.owl.schooltest.dto.blocktest.BlockTestDto;
+import uz.owl.schooltest.dto.group.GroupDto;
+import uz.owl.schooltest.dto.group.GroupPayload;
+import uz.owl.schooltest.dto.student.StudentDto;
+import uz.owl.schooltest.entity.BlockTest;
 import uz.owl.schooltest.service.GroupService;
 import uz.owl.schooltest.web.Message;
+import uz.owl.schooltest.web.rest.proto.GroupProto;
 
 import javax.validation.Valid;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+// todo chala Group Controller linklarni qoyish kerak
 @RestController
-public class GroupRestController {
+public class GroupRestController implements GroupProto {
     private final GroupService groupService;
-    private static final String RESOURCE_URI = "${api.v1}centers/{centername}/groups";
+    private final StudentRestController studentRestController;
+    private final BlockTestRestController blockTestRestController;
+    private static final String RESOURCE_URI = "/api/v1/centers/{centername}/groups";
 
-    public GroupRestController(GroupService groupService) {
+    public GroupRestController(GroupService groupService, StudentRestController studentRestController, BlockTestRestController blockTestRestController) {
         this.groupService = groupService;
+        this.studentRestController = studentRestController;
+        this.blockTestRestController = blockTestRestController;
     }
 
+    @Override
     @GetMapping(RESOURCE_URI)
-    public List<GroupDto> getAllGroups(Principal principal, @PathVariable String centername) {
-        return groupService.getAllByCenter(principal.getName(), centername);
+    public List<Resource<GroupDto>> getAllGroups(Principal principal, @PathVariable String centername) {
+        return groupService.getAllByCenter(principal.getName(), centername).stream().map(Resource<GroupDto>::new).collect(Collectors.toList());
     }
 
-//    @GetMapping(RESOURCE_URI + "/{groupid}")
-//    public ResponseEntity<GroupDto> getSingleGroup(Principal principal, @PathVariable String centername,
-//                                   @PathVariable Long groupid) {
-//        return ResponseEntity.ok(groupService.getSingle(principal.getName(), centername, groupid));
-//    }
-
+    @Override
     @GetMapping(RESOURCE_URI + "/{groupid}")
-    public Resource<GroupDto> getSingleGroup(Principal principal, @PathVariable String centername,
-                                                   @PathVariable Long groupid) {
+    public Resource<GroupDto> getSingleGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid) {
         Resource<GroupDto>  groupDtoResource = new Resource<>(groupService.getSingle(principal.getName(), centername, groupid));
-
         ControllerLinkBuilder link = linkTo(methodOn(this.getClass()).getAllGroups(principal, centername));
-
         groupDtoResource.add(link.withRel("all-groups"));
-
         return groupDtoResource;
     }
 
+    @Override
     @PostMapping(RESOURCE_URI)
-    public ResponseEntity<Message> addGroup(Principal principal, @PathVariable String centername, @Valid @RequestBody GroupPayload groupPayload) {
+    public ResponseEntity<Resource<Message>> saveGroup(Principal principal, @PathVariable String centername, @Valid @RequestBody GroupPayload groupPayload) {
         GroupDto groupDto = groupService.save(principal.getName(), centername, groupPayload.getName());
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{groupid}")
-                .buildAndExpand(groupDto.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{groupid}").buildAndExpand(groupDto.getId()).toUri();
         Message created = new Message(201, "Created").self(location);
         System.out.println(created );
-        return ResponseEntity.created(location).body(created);
+        return ResponseEntity.created(location).body(new Resource<Message>(created));
     }
 
+    @Override
+    @PutMapping(RESOURCE_URI + "/{groupid}")
+    public ResponseEntity<Resource<Message>> updateGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid,@RequestBody GroupPayload payload) {
+        GroupDto updateGroup = groupService.update(principal.getName(), centername, payload.getName(), groupid);
+        return ResponseEntity.ok(new Resource<Message>(new Message(200, "Updated"))); // TODO: 9/25/2019 linklarni tayyorlash kerak
+    }
+
+    @Override
+    public List<Resource<StudentDto>> getGroupStudents(Principal principal, String centername, Long groupId) {
+        List<StudentDto> guruhStudents = groupService.getGroupStudents(principal.getName(), centername, groupId);
+        List<Resource<StudentDto>> collect = guruhStudents.stream().map(studentDto -> {
+            Resource<StudentDto> resource = new Resource<>(studentDto);
+            studentRestController.links(resource, principal, centername, studentDto.getId());
+            return resource;
+        }).collect(Collectors.toList());
+        return collect;
+    }
+
+    @Override
+    public List<Resource<BlockTestDto>> getGuruhBlockTests(Principal principal, String centernema, Long groupId) {
+        List<BlockTestDto> guruhBlockTest = groupService.getGroupBlockTest(principal.getName(), centernema, groupId);
+        List<Resource<BlockTestDto>> collect = guruhBlockTest.stream().map(blockTestDto -> {
+            Resource<BlockTestDto> resource = new Resource<>(blockTestDto);
+            blockTestRestController.links(resource, principal, centernema, blockTestDto.getId());
+            return resource;
+        }).collect(Collectors.toList());
+        return collect;
+    }
+
+    @Override
     @DeleteMapping(RESOURCE_URI + "/{groupid}")
-    public ResponseEntity<Message> delete(Principal principal, @PathVariable String centername, @PathVariable Long groupid){
-        groupService.deleteByCenter(principal.getName(),
-                centername, groupid);
+    public ResponseEntity<Resource<Message>> deleteGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid){
+        groupService.deleteByCenter(principal.getName(), centername, groupid);
         URI uri = linkTo(methodOn(getClass()).getAllGroups(principal, centername)).toUri();
         Message message = new Message(200, "Deleted").all(uri);
-        return ResponseEntity.ok(message);
+        return ResponseEntity.ok(new Resource(message));
     }
 
+    public void links(Resource resource, Principal principal, String centername, Long groupId){
+        Link all_groups = linkTo(methodOn(getClass()).getAllGroups(principal, centername)).withRel("all_groups");
+        Link self = linkTo(methodOn(getClass()).getSingleGroup(principal, centername, groupId)).withRel("self");
+        resource.add(all_groups);
+        resource.add(self); // TODO: 9/28/2019 qolgan linklarni qo'shish kerak
+    }
 }

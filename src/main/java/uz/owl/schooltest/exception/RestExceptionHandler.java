@@ -39,11 +39,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(NotFoudException.class)
     public ResponseEntity<Message> notFoundEx(NotFoudException e){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message(400, e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message(404, e.getMessage()));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Message> anyError(Exception e){
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Message> anyError(RuntimeException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message(400, "Internal Server error"));
     }
 

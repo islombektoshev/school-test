@@ -29,16 +29,17 @@ public class SCenter {
     @JoinColumn(name = "author_id")
     private User author;
 
-    @OneToMany(mappedBy = "scenter")
+
+    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
     private final List<Subject> subjects = new ArrayList<>();
 
-    @OneToMany(mappedBy = "scenter")
+    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
     private final List<Guruh> guruhs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "scenter")
+    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
     private final List<BlockTest> blockTests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "scenter")
+    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
     private final List<Student> students = new ArrayList<>();
 
     @Override
@@ -48,5 +49,37 @@ public class SCenter {
                 ", name='" + name + '\'' +
                 ", caption='" + caption + '\'' +
                 '}';
+    }
+
+    public boolean addSubject(Subject subject){
+        return subjects.add(subject);
+    }
+
+    public boolean removeSubject(Subject subject){
+        return subjects.remove(subject);
+    }
+
+    public boolean addGuruh(Guruh guruh){
+        return guruhs.add(guruh);
+    }
+
+    public boolean removeGuruh(Guruh guruh){
+        return guruhs.remove(guruh);
+    }
+
+    public boolean addStudent(Student student){
+        return students.add(student);
+    }
+
+    public boolean removeStudent(Student student){
+        return students.remove(student);
+    }
+
+    public boolean addBlockTest(BlockTest blockTest){
+        return  blockTests.add(blockTest);
+    }
+
+    public boolean removeBlockTest(BlockTest blockTest){
+        return blockTests.remove(blockTest);
     }
 }
