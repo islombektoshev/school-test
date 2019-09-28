@@ -58,7 +58,7 @@ public class StudentService {
         return studentDao.findByScenterAndId(center, studentid);
     }
 
-    @Transactional // TODO: !9/27/2019 update didn't work check this method!
+    @Transactional
     public StudentDto saveStudent(String username, String centername, StudentPayload payload) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
@@ -68,12 +68,11 @@ public class StudentService {
                 .scenter(center)
                 .build();
         List<Subject> primarySubjects = subjectService.getPrimarySubject(user, center);
-        primarySubjects.forEach(System.out::println); // TODO: 9/26/2019 delete this line
         primarySubjects.forEach(subject -> {
             student.addSubject(subject);
             subject.addStudent(student);
         });
-        Student newStudent = studentDao.save(student); // todo may i need to update mapped side
+        Student newStudent = studentDao.save(student);
         return convertToStudentDto(newStudent);
     }
 
@@ -98,7 +97,7 @@ public class StudentService {
     }
 
 
-    @Transactional // TODO: 9/26/2019 transactional?? am I need it ?
+    @Transactional
     public GroupDto addGroupToStudent(String username, String centername, Long studentId, AddStudentToGroupPayload payload) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
@@ -120,7 +119,7 @@ public class StudentService {
         Guruh guruh = student.getGuruh();
         requireNotNull(student, "Student not found");
         requireNotNull(guruh, "Student has no group");
-        student.setGuruh(null); // todo check this line
+        student.setGuruh(null);
         guruh.removeStudent(student);
         studentDao.save(student);
     }

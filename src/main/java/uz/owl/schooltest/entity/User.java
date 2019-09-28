@@ -35,6 +35,12 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "firstname")
+    private String firstname;
+
+    @Column(name = "lastname")
+    private String lastname;
+
     @Column(name = "enable", nullable = false)
     @ColumnDefault("true")
     private boolean enable;

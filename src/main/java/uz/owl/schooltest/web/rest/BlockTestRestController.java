@@ -37,27 +37,34 @@ public class BlockTestRestController implements BlockTestProto {
     @Override
     @GetMapping(RESOURCE_URL)
     public List<Resource<BlockTestDto>> getAllBlockTest(Principal principal, @PathVariable String centername) {
-        // TODO: 9/25/2019 linklar qolib ketgan
-        return blockTestService.getAllBlockTest(principal.getName(), centername).stream().map(Resource<BlockTestDto>::new).collect(Collectors.toList());
+        return blockTestService.getAllBlockTest(principal.getName(), centername).stream().map(blockTestDto -> {
+            Resource<BlockTestDto> resource = new Resource<>(blockTestDto);
+            links(resource, principal, centername, blockTestDto.getId());
+            return resource;
+        }).collect(Collectors.toList());
     }
 
     @Override
     @GetMapping(RESOURCE_URL + "/{blockTestId}")
     public Resource<BlockTestDto> getBlockTest(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
-        return new Resource<>(blockTestService.getBlockTest(principal.getName(), centername, blockTestId));
+        Resource<BlockTestDto> resource = new Resource<>(blockTestService.getBlockTest(principal.getName(), centername, blockTestId));
+        links(resource, principal, centername, blockTestId);
+        return resource;
     }
 
     @Override
     @PostMapping(RESOURCE_URL)
     public ResponseEntity<Resource<Message>> saveBlockTest(Principal principal, @PathVariable String centername, @Valid @RequestBody CreateBlockTestPayload payload) {
-        blockTestService.createBlockTest(principal.getName(), centername, payload);
-        return ResponseEntity.ok(new Resource<Message>(new Message(200, "Created")));
+        BlockTestDto blockTest = blockTestService.createBlockTest(principal.getName(), centername, payload);
+        Resource<Message> created = new Resource<>(new Message(200, "Created"));
+        links(created, principal, centername, blockTest.getId());
+        return ResponseEntity.ok(created);
     }
 
     @Override
-    @PutMapping(RESOURCE_URL + "/{blockTestId}")
+//    @PutMapping(RESOURCE_URL + "/{blockTestId}")
     public ResponseEntity<Resource<Message>> updateUpdateBlockTest(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId, @Valid @RequestBody BlockTestPayload payload) {
-        return null;
+        return null; // TODO: 9/28/2019 its didn't work
     }
 
     @Override
@@ -164,7 +171,7 @@ public class BlockTestRestController implements BlockTestProto {
     public void links(Resource resource, Principal principal, String centername, Long blockTestId){
         Link all_blocktest = linkTo(methodOn(getClass()).getAllBlockTest(principal, centername)).withRel("all_blocktest");
         Link self = linkTo(methodOn(getClass()).getBlockTest(principal, centername, blockTestId)).withSelfRel();
-        Link subjects = linkTo(methodOn(getClass()).getStudents(principal, centername, blockTestId)).withRel("subjects");
+        Link subjects = linkTo(methodOn(getClass()).getSubjects(principal, centername, blockTestId)).withRel("subjects");
         Link groups = linkTo(methodOn(getClass()).getGroups(principal, centername, blockTestId)).withRel("groups");
         Link students = linkTo(methodOn(getClass()).getStudents(principal, centername, blockTestId)).withRel("students");
 

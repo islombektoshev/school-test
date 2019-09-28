@@ -33,8 +33,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(CenterNotFoundException.class)
-    public ResponseEntity<Message> ifCenterNotFound(CoundtUpdatedException e){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message(400, e.getMessage()));
+    public ResponseEntity<Message> ifCenterNotFound(CenterNotFoundException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message(400, e.getMessage()));
     }
 
     @ExceptionHandler(NotFoudException.class)

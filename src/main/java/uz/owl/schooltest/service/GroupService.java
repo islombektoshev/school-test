@@ -41,7 +41,7 @@ public class GroupService {
         return groupDtos;
     }
 
-    @Transactional // TODO: 9/26/2019 qarab qoyish kerak
+    @Transactional
     public GroupDto getSingle(String username, String centername, Long id) {
         User user = userService.getUser(username);
         SCenter center = getCenter(user, centername);

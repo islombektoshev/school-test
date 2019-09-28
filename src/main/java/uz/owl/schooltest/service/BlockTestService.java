@@ -80,7 +80,6 @@ public class BlockTestService {
                 .scenter(center)
                 .build();
         blockTest = blockTestDao.save(blockTest);
-        System.out.println("blockTest = " + blockTest);// TODO: 9/28/2019 delete this line
         final BlockTest finalBlockTest = blockTest;
         List<Guruh> guruhs = payload.getGroups().stream().map(groupId -> {
             Guruh guruh = groupService.getGuruhEntity(center, groupId.longValue());
@@ -88,7 +87,6 @@ public class BlockTestService {
                 guruh.addBlockTest(finalBlockTest);
             return guruh; })
                 .filter(Objects::nonNull)
-                .peek(System.out::println) // TODO: 9/27/2019 delete this line
                 .collect(Collectors.toList());
 
         final BlockTest finalBlockTest1 = blockTest;
@@ -98,7 +96,6 @@ public class BlockTestService {
                 subject.addBlockTest(finalBlockTest1);
             return subject;
         }).filter(Objects::nonNull)
-                .peek(System.out::println) // TODO: 9/27/2019 delete this line
                 .collect(Collectors.toList());
 
         if (guruhs.isEmpty() || subjects.isEmpty()) return null;
@@ -107,7 +104,7 @@ public class BlockTestService {
         Long blockTestId = savedBlockTest.getId();
         blockTestDao.generateStudent(blockTestId);
 
-        return convertToBlockTestDto(savedBlockTest); // TODO: 9/25/2019
+        return convertToBlockTestDto(savedBlockTest);
     }
 
 

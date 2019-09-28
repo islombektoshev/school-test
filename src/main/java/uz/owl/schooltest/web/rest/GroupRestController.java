@@ -3,6 +3,7 @@ package uz.owl.schooltest.web.rest;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -48,8 +49,7 @@ public class GroupRestController implements GroupProto {
     @GetMapping(RESOURCE_URI + "/{groupid}")
     public Resource<GroupDto> getSingleGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid) {
         Resource<GroupDto>  groupDtoResource = new Resource<>(groupService.getSingle(principal.getName(), centername, groupid));
-        ControllerLinkBuilder link = linkTo(methodOn(this.getClass()).getAllGroups(principal, centername));
-        groupDtoResource.add(link.withRel("all-groups"));
+        links(groupDtoResource, principal, centername, groupid);
         return groupDtoResource;
     }
 
@@ -57,10 +57,9 @@ public class GroupRestController implements GroupProto {
     @PostMapping(RESOURCE_URI)
     public ResponseEntity<Resource<Message>> saveGroup(Principal principal, @PathVariable String centername, @Valid @RequestBody GroupPayload groupPayload) {
         GroupDto groupDto = groupService.save(principal.getName(), centername, groupPayload.getName());
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{groupid}").buildAndExpand(groupDto.getId()).toUri();
-        Message created = new Message(201, "Created").self(location);
-        System.out.println(created );
-        return ResponseEntity.created(location).body(new Resource<Message>(created));
+        Resource<Message> messageResource = new Resource<>(new Message(201, "Message Created"));
+        links(messageResource, principal, centername, groupDto.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(messageResource);
     }
 
     @Override

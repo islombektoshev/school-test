@@ -128,14 +128,14 @@ public class StudentRestController implements StudentProto {
 
     @Override
     @DeleteMapping(RESURCE_URL + "/{studentId}/groups")
-    public ResponseEntity<?> removeGroup(Principal principal, String centername, @PathVariable Long studentId) {
+    public ResponseEntity<?> removeGroup(Principal principal,@PathVariable String centername, @PathVariable Long studentId) {
         studentService.removeGroupFromStudent(principal.getName(), centername, studentId);
         return ResponseEntity.ok().build();
     }
 
     @Override
     @DeleteMapping(RESURCE_URL + "/{studentId}/subjects")
-    public ResponseEntity<?> removeSubject(Principal principal, String centername, @PathVariable Long studentId, @Valid  @RequestBody AddSubjectToStudentPayload payload) {
+    public ResponseEntity<?> removeSubject(Principal principal,@PathVariable String centername, @PathVariable Long studentId, @Valid  @RequestBody AddSubjectToStudentPayload payload) {
         payload.getSubjectName().forEach(subjectName ->{
             studentService.removeSubjectFromStudent(principal.getName(), centername, studentId, subjectName);
         });

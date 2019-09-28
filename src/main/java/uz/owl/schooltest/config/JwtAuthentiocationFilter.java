@@ -13,6 +13,7 @@ import uz.owl.schooltest.config.model.SecurityDto;
 import uz.owl.schooltest.config.model.SecurityPayload;
 import uz.owl.schooltest.entity.Role;
 import uz.owl.schooltest.entity.User;
+import uz.owl.schooltest.web.Message;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -32,6 +33,12 @@ public class JwtAuthentiocationFilter extends UsernamePasswordAuthenticationFilt
         this.authenticationManager = authenticationManager;
         this.objectMapper = objectMapper;
         setFilterProcessesUrl(SecurityConstants.AUTH_LOGIN_URL);
+        setAuthenticationFailureHandler(((httpServletRequest, httpServletResponse, e) -> {
+            String un_authenticated = objectMapper.writeValueAsString(new Message(403, "Un Authenticated"));
+            httpServletResponse.getWriter().println(un_authenticated);
+            httpServletResponse.setStatus(403);
+            httpServletResponse.setContentType("application/json");
+        }));
     }
 
     @Override
