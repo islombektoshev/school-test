@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
-// todo chala Group Controller linklarni qoyish kerak
 @RestController
 public class GroupRestController implements GroupProto {
     private final GroupService groupService;
