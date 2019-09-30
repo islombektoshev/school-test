@@ -99,9 +99,9 @@ public class GroupRestController implements GroupProto {
         return ResponseEntity.ok(new Resource(message));
     }
 
-    public void links(Resource resource, Principal principal, String centername, Long groupId){
-        Link all_groups = linkTo(methodOn(getClass()).getAllGroups(principal, centername)).withRel("all_groups");
-        Link self = linkTo(methodOn(getClass()).getSingleGroup(principal, centername, groupId)).withRel("self");
+    public static void links(Resource resource, Principal principal, String centername, Long groupId){
+        Link all_groups = linkTo(methodOn(GroupRestController.class).getAllGroups(principal, centername)).withRel("all_groups");
+        Link self = linkTo(methodOn(GroupRestController.class).getSingleGroup(principal, centername, groupId)).withRel("self");
         resource.add(all_groups);
         resource.add(self); // TODO: 9/28/2019 qolgan linklarni qo'shish kerak
     }

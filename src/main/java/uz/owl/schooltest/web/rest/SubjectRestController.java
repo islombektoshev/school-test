@@ -1,9 +1,12 @@
 package uz.owl.schooltest.web.rest;
 
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import schemasMicrosoftComOfficeOffice.STInsetMode;
 import uz.owl.schooltest.dto.subject.SubjectPayload;
 import uz.owl.schooltest.dto.subject.SubjectDto;
 import uz.owl.schooltest.exception.CenterNotFoundException;
@@ -17,6 +20,9 @@ import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 //todo chalarari bor linlarni kodini yozish kerak
 @RestController
@@ -32,22 +38,31 @@ public class SubjectRestController implements SubjectProto {
     @GetMapping(RESOURCE_URL)
     public List<Resource<SubjectDto>> getAllSubjects(Principal principal, @PathVariable String centername) throws UserNotFoundException, CenterNotFoundException {
         List<SubjectDto> subjectByUsernameAnsCentername = subjectService.getSubjectByUsernameAndCentername(principal.getName(), centername);
-        return subjectByUsernameAnsCentername.stream().map(Resource<SubjectDto>::new).collect(Collectors.toList());
+        return subjectByUsernameAnsCentername.stream().map(subject -> {
+            Resource<SubjectDto> resource = new Resource<>(subject);
+            links(resource,principal, centername, subject.getName());
+            return resource;
+        }
+        ).collect(Collectors.toList());
     }
 
     @Override
     @GetMapping(RESOURCE_URL + "/{subjectname}")
     public Resource<SubjectDto> getSingleSubject(Principal principal, @PathVariable String centername, @PathVariable String subjectname) throws UserNotFoundException, CenterNotFoundException {
         SubjectDto subjectDto = subjectService.getSubjectDtoByUsernameAndCenternameAndSubjectname(principal.getName(), centername, subjectname);
-        return new Resource<>(subjectDto);
+        Resource<SubjectDto> subjectDtoResource = new Resource<>(subjectDto);
+        links(subjectDtoResource, principal, centername, subjectname);
+        return subjectDtoResource;
     }
 
     @Override
     @PostMapping(RESOURCE_URL)
     public ResponseEntity<Resource<Message>> saveSubject(Principal principal, @PathVariable String centername, @Valid @RequestBody SubjectPayload subjectPayload) throws UserNotFoundException, CenterNotFoundException, CoundtCreatedExeption {
         subjectPayload.setCentername(centername);
-        subjectService.saveSubject(principal.getName(), subjectPayload);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new Resource<>(new Message(201, "Subject created")));
+        SubjectDto subjectDto = subjectService.saveSubject(principal.getName(), subjectPayload);
+        Resource<Message> subject_created = new Resource<>(new Message(201, "Subject created"));
+        links(subject_created, principal, centername, subjectDto.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(subject_created);
     }
 
     @Override
@@ -56,7 +71,9 @@ public class SubjectRestController implements SubjectProto {
         subjectPayload.setCentername(centername);
         String username = principal.getName();
         SubjectDto subjectDto = subjectService.updateSubject(username, subjectname, subjectPayload);
-        return ResponseEntity.ok(new Resource<>(new Message(200, "Updated")));
+        Resource<Message> updated = new Resource<>(new Message(200, "Updated"));
+        links(updated, principal, centername, subjectDto.getName());
+        return ResponseEntity.ok(updated);
     }
 
     @Override
@@ -64,8 +81,13 @@ public class SubjectRestController implements SubjectProto {
     public ResponseEntity<Resource<Message>> deleteSubject(Principal principal, @PathVariable String centername, @PathVariable String subjectname) throws UserNotFoundException, CenterNotFoundException {
         String username = principal.getName();
         subjectService.deleteSubject(username, centername, subjectname);
-
-        // TODO kodni yozib qoyish kerea
         return ResponseEntity.ok(new Resource<Message>(new Message(200, "Deleted")));
+    }
+
+    public void links(Resource resource, Principal principal, String centername, String subjectName){
+        Link all_subjects = linkTo(methodOn(getClass()).getAllSubjects(principal, centername)).withRel("all_subjects");
+        Link self = linkTo(methodOn(getClass()).getSingleSubject(principal, centername, subjectName)).withSelfRel();
+        resource.add(self);
+        resource.add(all_subjects);
     }
 }

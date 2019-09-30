@@ -1,9 +1,8 @@
 package uz.owl.schooltest.web.rest;
 
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.owl.schooltest.dto.blocktest.BlockTestDto;
@@ -21,16 +20,19 @@ import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+
 @RestController
 public class BlockTestRestController implements BlockTestProto {
 
 
-    private final Environment environment;
     private final String RESOURCE_URL = "/api/v1/centers/{centername}/blocktests";
     private final BlockTestService blockTestService;
+    @Autowired
+    SubjectRestController subjectRestController;
 
-    public BlockTestRestController(Environment environment, BlockTestService blockTestService) {
-        this.environment = environment;
+    public BlockTestRestController(BlockTestService blockTestService) {
         this.blockTestService = blockTestService;
     }
 
@@ -85,10 +87,10 @@ public class BlockTestRestController implements BlockTestProto {
     public ResponseEntity<Resource<Message>> addSubject(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId, @PathVariable String subjectName) {
         boolean b = blockTestService.addSubject(principal.getName(), centername, blockTestId, subjectName);
         Resource<Message> resource;
-        if (b){
-            resource= new Resource<>(new Message(200, "Subject Already has"));
-        }else{
-            resource= new Resource<>(new Message(200, "Subject added"));
+        if (b) {
+            resource = new Resource<>(new Message(200, "Subject Already has"));
+        } else {
+            resource = new Resource<>(new Message(200, "Subject added"));
         }
         links(resource, principal, centername, blockTestId);
         return ResponseEntity.ok(resource);
@@ -99,10 +101,10 @@ public class BlockTestRestController implements BlockTestProto {
     public ResponseEntity<Resource<Message>> addGroup(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId, @PathVariable Long groupId) {
         boolean b = blockTestService.addGroup(principal.getName(), centername, blockTestId, groupId);
         Resource<Message> resource;
-        if (b){
-            resource= new Resource<>(new Message(200, "Group Already has"));
-        }else{
-            resource= new Resource<>(new Message(200, "Group added"));
+        if (b) {
+            resource = new Resource<>(new Message(200, "Group Already has"));
+        } else {
+            resource = new Resource<>(new Message(200, "Group added"));
         }
         links(resource, principal, centername, blockTestId);
         return ResponseEntity.ok(resource);
@@ -113,10 +115,10 @@ public class BlockTestRestController implements BlockTestProto {
     public ResponseEntity<Resource<Message>> removeStudent(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId, @PathVariable Long studentId) {
         boolean b = blockTestService.removeStudent(principal.getName(), centername, blockTestId, studentId);
         Resource<Message> resource;
-        if (b){
-            resource= new Resource<>(new Message(200, "Student already removed"));
-        }else{
-            resource= new Resource<>(new Message(200, "Student removed"));
+        if (b) {
+            resource = new Resource<>(new Message(200, "Student already removed"));
+        } else {
+            resource = new Resource<>(new Message(200, "Student removed"));
         }
         links(resource, principal, centername, blockTestId);
         return ResponseEntity.ok(resource);
@@ -127,10 +129,10 @@ public class BlockTestRestController implements BlockTestProto {
     public ResponseEntity<Resource<Message>> removeSubject(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId, @PathVariable String subjectName) {
         boolean b = blockTestService.removeSubject(principal.getName(), centername, blockTestId, subjectName);
         Resource<Message> resource;
-        if (b){
-            resource= new Resource<>(new Message(200, "Subject already removed"));
-        }else{
-            resource= new Resource<>(new Message(200, "Subject removed"));
+        if (b) {
+            resource = new Resource<>(new Message(200, "Subject already removed"));
+        } else {
+            resource = new Resource<>(new Message(200, "Subject removed"));
         }
         links(resource, principal, centername, blockTestId);
         return ResponseEntity.ok(resource);
@@ -141,10 +143,10 @@ public class BlockTestRestController implements BlockTestProto {
     public ResponseEntity<Resource<Message>> removeGroup(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId, @PathVariable Long groupId) {
         boolean b = blockTestService.removeGroup(principal.getName(), centername, blockTestId, groupId);
         Resource<Message> resource;
-        if (b){
-            resource= new Resource<>(new Message(200, "Group already removed"));
-        }else{
-            resource= new Resource<>(new Message(200, "Group removed"));
+        if (b) {
+            resource = new Resource<>(new Message(200, "Group already removed"));
+        } else {
+            resource = new Resource<>(new Message(200, "Group removed"));
         }
         links(resource, principal, centername, blockTestId);
         return ResponseEntity.ok(resource);
@@ -152,23 +154,38 @@ public class BlockTestRestController implements BlockTestProto {
 
     @Override
     @GetMapping(RESOURCE_URL + "/{blockTestId}/students")
-    public List<StudentDto> getStudents(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
-        return blockTestService.getStudents(principal.getName(), centername, blockTestId);
+    public List<Resource<StudentDto>> getStudents(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
+        return blockTestService.getStudents(principal.getName(), centername, blockTestId)
+                .stream().map(studentDto -> {
+                    Resource<StudentDto> resource = new Resource<>(studentDto);
+                    StudentRestController.links(resource, principal, centername, studentDto.getId());
+                    return resource;
+                }).collect(Collectors.toList());
     }
 
     @Override
     @GetMapping(RESOURCE_URL + "/{blockTestId}/groups")
-    public List<GroupDto> getGroups(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
-        return blockTestService.getGroups(principal.getName(), centername, blockTestId);
+    public List<Resource<GroupDto>> getGroups(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
+        return blockTestService.getGroups(principal.getName(), centername, blockTestId).stream()
+                .map(groupDto -> {
+                    Resource<GroupDto> groupDtoResource = new Resource<>(groupDto);
+                    GroupRestController.links(groupDtoResource, principal, centername, groupDto.getId());
+                    return groupDtoResource;
+                }).collect(Collectors.toList());
     }
 
     @Override
     @GetMapping(RESOURCE_URL + "/{blockTestId}/subjects")
-    public List<SubjectDto> getSubjects(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
-        return blockTestService.getSubjects(principal.getName(), centername, blockTestId);
+    public List<Resource<SubjectDto>> getSubjects(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
+        return blockTestService.getSubjects(principal.getName(), centername, blockTestId).stream()
+                .map(subjectDto -> {
+                    Resource<SubjectDto> subjectDtoResource = new Resource<>(subjectDto);
+                    subjectRestController.links(subjectDtoResource, principal, centername, subjectDto.getName());
+                    return subjectDtoResource;
+                }).collect(Collectors.toList());
     }
 
-    public void links(Resource resource, Principal principal, String centername, Long blockTestId){
+    public void links(Resource resource, Principal principal, String centername, Long blockTestId) {
         Link all_blocktest = linkTo(methodOn(getClass()).getAllBlockTest(principal, centername)).withRel("all_blocktest");
         Link self = linkTo(methodOn(getClass()).getBlockTest(principal, centername, blockTestId)).withSelfRel();
         Link subjects = linkTo(methodOn(getClass()).getSubjects(principal, centername, blockTestId)).withRel("subjects");

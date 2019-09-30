@@ -37,9 +37,9 @@ public interface BlockTestProto {
 
     ResponseEntity<Resource<Message>> removeGroup(Principal principal, String centername, Long blockTestId, Long groupId);
 
-    List<StudentDto> getStudents(Principal principal, String centername, Long blockTestId);
+    List<Resource<StudentDto>> getStudents(Principal principal, String centername, Long blockTestId);
 
-    List<GroupDto> getGroups(Principal principal, String centername, Long blockTestId);
+    List<Resource<GroupDto>> getGroups(Principal principal, String centername, Long blockTestId);
 
-    List<SubjectDto> getSubjects(Principal principal, String centername, Long blockTestId);
+    List<Resource<SubjectDto>> getSubjects(Principal principal, String centername, Long blockTestId);
 }

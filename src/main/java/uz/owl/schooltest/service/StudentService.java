@@ -1,5 +1,6 @@
 package uz.owl.schooltest.service;
 
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import uz.owl.schooltest.dto.student.StudentPayload;
 import uz.owl.schooltest.dto.subject.SubjectDto;
 import uz.owl.schooltest.entity.*;
 import uz.owl.schooltest.exception.NotFoudException;
+import uz.owl.schooltest.service.excel.StudentToExcel;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -31,6 +33,8 @@ public class StudentService {
     private  GroupService groupService;
     @Autowired
     private BlockTestService blockTestService;
+    @Autowired
+    StudentToExcel studentToExcel;
 
     public StudentService(StudentDao studentDao, SCenterService sCenterService, UserService userService, SubjectService subjectService) {
         this.studentDao = studentDao;
@@ -42,8 +46,24 @@ public class StudentService {
     public List<StudentDto> getAllStudents(String username, String centername) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
-        return studentDao.findAllByScenter(center).stream().map(this::convertToStudentDto).collect(Collectors.toList());
+        List<StudentDto> studentDtos = getAllStudentEntityByScenter(center).stream().map(this::convertToStudentDto).collect(Collectors.toList());
+        return studentDtos;
     }
+
+    List<Student> getAllStudentEntityByScenter(SCenter center) {
+        return studentDao.findAllByScenter(center);
+    }
+
+    @Transactional
+    public XSSFWorkbook getAllStudentsExcel(String username, String centername){
+        User user = userService.getUser(username);
+        SCenter center = sCenterService.getCenter(user, centername);
+        List<Student> students = center.getStudents();
+        if (students.isEmpty()) return null;
+        XSSFWorkbook studentsSheet = studentToExcel.getStudentsSheet(students);
+        return studentsSheet;
+    }
+
 
     public StudentDto getStudent(String username, String centername, Long studentid) {
         User user = userService.getUser(username);

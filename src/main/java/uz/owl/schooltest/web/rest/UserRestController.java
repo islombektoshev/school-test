@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import uz.owl.schooltest.dto.user.UserDto;
 import uz.owl.schooltest.dto.user.UserPayload;
 import uz.owl.schooltest.service.UserService;
+
 import uz.owl.schooltest.web.Message;
 
 import java.security.Principal;
@@ -20,7 +21,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @RequestMapping("/api/v1")
 public class UserRestController {
     private final UserService userService;
-
     public UserRestController(UserService userService) {
         this.userService = userService;
     }
@@ -55,5 +55,11 @@ public class UserRestController {
         if (userDto == null) return Collections.singletonMap("isEmpty", false);
         return Collections.singletonMap("isEmpty", true);
     }
+
+    @GetMapping("/test")
+    public String test(){
+        return "Hello";
+    }
+
 
 }

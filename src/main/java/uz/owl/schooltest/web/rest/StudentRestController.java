@@ -1,9 +1,10 @@
 package uz.owl.schooltest.web.rest;
 
+import org.apache.catalina.util.IOTools;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.owl.schooltest.dto.blocktest.BlockTestDto;
@@ -17,7 +18,9 @@ import uz.owl.schooltest.service.StudentService;
 import uz.owl.schooltest.web.Message;
 import uz.owl.schooltest.web.rest.proto.StudentProto;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -154,7 +157,7 @@ public class StudentRestController implements StudentProto {
         return ResponseEntity.ok(collect);
     }
 
-    public void links(Resource resource, Principal principal, String centername, Long studentId) {
+    public static void links(Resource resource, Principal principal, String centername, Long studentId) {
 //        _links:{
 //            self:?
 //            subjects:
@@ -165,10 +168,10 @@ public class StudentRestController implements StudentProto {
 //            }
 //        }
 
-        Link all_student = linkTo(methodOn(getClass()).getAllStudents(principal, centername)).withRel("all_student");
-        Link student = linkTo(methodOn(getClass()).getStudent(principal, centername, studentId)).withRel("student");
-        Link subjects = linkTo(methodOn(getClass()).getSubjects(principal, centername, studentId)).withRel("subjects");
-        Link groups = linkTo(methodOn(getClass()).getGroup(principal, centername, studentId)).withRel("groups");
+        Link all_student = linkTo(methodOn(StudentRestController.class).getAllStudents(principal, centername)).withRel("all_student");
+        Link student = linkTo(methodOn(StudentRestController.class).getStudent(principal, centername, studentId)).withRel("student");
+        Link subjects = linkTo(methodOn(StudentRestController.class).getSubjects(principal, centername, studentId)).withRel("subjects");
+        Link groups = linkTo(methodOn(StudentRestController.class).getGroup(principal, centername, studentId)).withRel("groups");
         Link center = linkTo(methodOn(SCenterRestController.class).getSingleCenter(principal, centername)).withRel("center");
         // todo result link don't add to resourse
         resource.add(student);
@@ -177,4 +180,24 @@ public class StudentRestController implements StudentProto {
         resource.add(subjects);
         resource.add(groups);
     }
+
+    @GetMapping(RESURCE_URL + "/excel")
+    public void getAllStudentsExcel(HttpServletResponse response, Principal principal, @PathVariable String centername) {
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("content-disposition", "attachment; filename=students-list.xlsx");
+        XSSFWorkbook allStudentsExcel = null;
+        try {
+            allStudentsExcel = studentService.getAllStudentsExcel(principal.getName(), centername);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            allStudentsExcel.write(response.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
