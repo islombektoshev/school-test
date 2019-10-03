@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

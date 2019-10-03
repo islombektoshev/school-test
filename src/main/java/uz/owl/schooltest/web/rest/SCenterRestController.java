@@ -1,9 +1,6 @@
 package uz.owl.schooltest.web.rest;
 
 import org.springframework.hateoas.Resource;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
-
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import uz.owl.schooltest.dto.scenter.SCenterDto;
 import uz.owl.schooltest.dto.scenter.SCenterPayload;
 import uz.owl.schooltest.exception.CenterNotFoundException;
-import uz.owl.schooltest.exception.CoundtCreatedExeption;
 import uz.owl.schooltest.exception.CoundtUpdatedException;
 import uz.owl.schooltest.exception.UserNotFoundException;
 import uz.owl.schooltest.service.SCenterService;
@@ -19,11 +15,11 @@ import uz.owl.schooltest.web.Message;
 
 import javax.validation.Valid;
 import java.security.Principal;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController()
 public class SCenterRestController {

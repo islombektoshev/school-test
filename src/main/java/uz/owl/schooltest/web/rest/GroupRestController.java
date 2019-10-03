@@ -2,16 +2,13 @@ package uz.owl.schooltest.web.rest;
 
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import uz.owl.schooltest.dto.blocktest.BlockTestDto;
 import uz.owl.schooltest.dto.group.GroupDto;
 import uz.owl.schooltest.dto.group.GroupPayload;
 import uz.owl.schooltest.dto.student.StudentDto;
-import uz.owl.schooltest.entity.BlockTest;
 import uz.owl.schooltest.service.GroupService;
 import uz.owl.schooltest.web.Message;
 import uz.owl.schooltest.web.rest.proto.GroupProto;

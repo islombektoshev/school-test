@@ -1,6 +1,5 @@
 package uz.owl.schooltest.service;
 
-import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.owl.schooltest.dao.GroupDao;
@@ -13,7 +12,6 @@ import uz.owl.schooltest.exception.NotFoudException;
 import uz.owl.schooltest.web.rest.ControllerTool;
 
 import javax.transaction.Transactional;
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
