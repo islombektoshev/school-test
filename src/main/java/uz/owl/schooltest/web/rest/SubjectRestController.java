@@ -9,7 +9,6 @@ import uz.owl.schooltest.dto.blocktest.BlockTestDto;
 import uz.owl.schooltest.dto.student.StudentDto;
 import uz.owl.schooltest.dto.subject.SubjectDto;
 import uz.owl.schooltest.dto.subject.SubjectPayload;
-import uz.owl.schooltest.entity.Subject;
 import uz.owl.schooltest.exception.CenterNotFoundException;
 import uz.owl.schooltest.exception.CoundtCreatedExeption;
 import uz.owl.schooltest.exception.UserNotFoundException;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
-//todo chalarari bor linlarni kodini yozish kerak
 @RestController
 public class SubjectRestController implements SubjectProto {
     private static final String RESOURCE_URL = "/api/v1/centers/{centername}/subjects";
@@ -102,7 +100,7 @@ public class SubjectRestController implements SubjectProto {
     }
 
     @Override
-    @DeleteMapping(RESOURCE_URL + "/{subjectname}") // TODO: 10/2/2019 fix ManyToMany issue
+    @DeleteMapping(RESOURCE_URL + "/{subjectname}")
     public ResponseEntity<Resource<Message>> deleteSubject(Principal principal, @PathVariable String centername, @PathVariable String subjectname) throws UserNotFoundException, CenterNotFoundException {
         String username = principal.getName();
         subjectService.deleteSubject(username, centername, subjectname);

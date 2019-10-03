@@ -65,7 +65,9 @@ public class GroupRestController implements GroupProto {
     @PutMapping(RESOURCE_URI + "/{groupid}")
     public ResponseEntity<Resource<Message>> updateGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid, @RequestBody GroupPayload payload) {
         GroupDto updateGroup = groupService.update(principal.getName(), centername, payload.getName(), groupid);
-        return ResponseEntity.ok(new Resource<Message>(new Message(200, "Updated"))); // TODO: 9/25/2019 linklarni tayyorlash kerak
+        Resource<Message> updated = new Resource<>(new Message(200, "Updated"));
+        links(updated, principal, centername, updateGroup.getId());
+        return ResponseEntity.ok(updated);
     }
 
     @Override
@@ -93,7 +95,7 @@ public class GroupRestController implements GroupProto {
     }
 
     @Override
-    @DeleteMapping(RESOURCE_URI + "/{groupid}") // TODO: 10/2/2019 fix ManyToMany issue
+    @DeleteMapping(RESOURCE_URI + "/{groupid}")
     public ResponseEntity<Resource<Message>> deleteGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid) {
         groupService.deleteByCenter(principal.getName(), centername, groupid);
         URI uri = linkTo(methodOn(getClass()).getAllGroups(principal, centername)).toUri();
@@ -110,6 +112,6 @@ public class GroupRestController implements GroupProto {
         resource.add(students);
         resource.add(blocktest);
         resource.add(all_groups);
-        resource.add(self); // TODO: 9/28/2019 qolgan linklarni qo'shish kerak
+        resource.add(self);
     }
 }

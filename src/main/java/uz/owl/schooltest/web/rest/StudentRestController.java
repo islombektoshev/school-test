@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
-// TODO: 9/25/2019 yana birmarta tekshirib chiqish kerak
 @RestController
 public class StudentRestController implements StudentProto {
 
@@ -82,7 +81,7 @@ public class StudentRestController implements StudentProto {
     }
 
     @Override
-    @DeleteMapping(RESURCE_URL + "/{studentId}") // TODO: 10/2/2019 fix ManyToMany issue
+    @DeleteMapping(RESURCE_URL + "/{studentId}")
     public ResponseEntity<Resource<Message>> deleteStudent(Principal principal, @PathVariable String centername, @PathVariable Long studentId) {
         studentService.delete(principal.getName(), centername, studentId);
         Resource<Message> message = new Resource<>(new Message(200, "Deleted"));
@@ -120,7 +119,7 @@ public class StudentRestController implements StudentProto {
         Link students = linkTo(this.getClass()).withRel("students");
         Resource<GroupDto> body = new Resource<>(studentGroup);
         body.add(students);
-        return ResponseEntity.ok(body);// TODO: 9/26/2019 test
+        return ResponseEntity.ok(body);
     }
 
     @Override
