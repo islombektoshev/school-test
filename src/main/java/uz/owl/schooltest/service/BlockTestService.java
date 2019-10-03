@@ -9,6 +9,7 @@ import uz.owl.schooltest.dto.group.GroupDto;
 import uz.owl.schooltest.dto.student.StudentDto;
 import uz.owl.schooltest.dto.subject.SubjectDto;
 import uz.owl.schooltest.entity.*;
+import uz.owl.schooltest.exception.NotFoudException;
 import uz.owl.schooltest.web.rest.ControllerTool;
 
 import javax.transaction.Transactional;
@@ -48,11 +49,15 @@ public class BlockTestService {
     }
 
     public List<BlockTestDto> getAllBlockTest(String username, String centername) {
-        return getAllBlockTestEntity(username, centername).stream().map(this::convertToBlockTestDto).collect(Collectors.toList());
+        return getAllBlockTestEntity(username, centername).stream().map(BlockTestService::convertToBlockTestDto).collect(Collectors.toList());
     }
 
     public BlockTestDto getBlockTest(String username, String centername, Long id) {
-        return convertToBlockTestDto(getBlockTestEntity(username, centername, id));
+        BlockTestDto blockTestDto = convertToBlockTestDto(getBlockTestEntity(username, centername, id));
+        if (blockTestDto == null) {
+            throw new NotFoudException("Block Test Not Found");
+        }
+        return blockTestDto;
     }
 
     @Deprecated() // use createBlockTest method
@@ -85,7 +90,8 @@ public class BlockTestService {
             Guruh guruh = groupService.getGuruhEntity(center, groupId.longValue());
             if (guruh != null)
                 guruh.addBlockTest(finalBlockTest);
-            return guruh; })
+            return guruh;
+        })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
@@ -112,21 +118,23 @@ public class BlockTestService {
     public void deleteBlockTest(String username, String centername, Long blockId) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
-        blockTestDao.deleteByScenterAndId(center, blockId);
+        BlockTest blockTest = blockTestDao.findByScenterAndId(center, blockId);
+        if (blockTest == null) return;
+        blockTestDao.deleteBlockTest(blockTest.getId());
     }
 
     @Transactional
-    public List<StudentDto> getStudents(String username, String centername, Long blockId){
+    public List<StudentDto> getStudents(String username, String centername, Long blockId) {
         BlockTest blockTestEntity = getBlockTestEntity(username, centername, blockId);
-        return blockTestEntity.getStudents().stream().map(studentService::convertToStudentDto).collect(Collectors.toList());
+        return blockTestEntity.getStudents().stream().map(StudentService::convertToStudentDto).collect(Collectors.toList());
     }
 
-    public List<GroupDto> getGroups(String username, String centername, Long blockId){
+    public List<GroupDto> getGroups(String username, String centername, Long blockId) {
         BlockTest blockTestEntity = getBlockTestEntity(username, centername, blockId);
         return blockTestEntity.getGuruhs().stream().map(groupService::convertToGroupDto).collect(Collectors.toList());
     }
 
-    public List<SubjectDto> getSubjects(String username, String centername, Long blockId){
+    public List<SubjectDto> getSubjects(String username, String centername, Long blockId) {
         BlockTest blockTestEntity = getBlockTestEntity(username, centername, blockId);
         return blockTestEntity.getSubjects().stream().map(subjectService::convertToSubjectDto).collect(Collectors.toList());
     }
@@ -245,7 +253,8 @@ public class BlockTestService {
     }
 
 
-    public BlockTestDto convertToBlockTestDto(BlockTest blockTest) {
+    public static BlockTestDto convertToBlockTestDto(BlockTest blockTest) {
+        if (blockTest == null) return null;
         return BlockTestDto.builder()
                 .name(blockTest.getName())
                 .countOfQuestion(blockTest.getCountOfQuestion())

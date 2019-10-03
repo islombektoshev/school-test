@@ -46,7 +46,7 @@ public class StudentService {
     public List<StudentDto> getAllStudents(String username, String centername) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
-        List<StudentDto> studentDtos = getAllStudentEntityByScenter(center).stream().map(this::convertToStudentDto).collect(Collectors.toList());
+        List<StudentDto> studentDtos = getAllStudentEntityByScenter(center).stream().map(StudentService::convertToStudentDto).collect(Collectors.toList());
         return studentDtos;
     }
 
@@ -208,11 +208,11 @@ public class StudentService {
         SCenter center = sCenterService.getCenter(user, centername);
         Student studentEntity = getStudentEntity(center, studentId);
         requireNotNull(studentEntity, "Student not found");
-        return studentEntity.getBlockTests().stream().map(blockTestService::convertToBlockTestDto).collect(Collectors.toList());
+        return studentEntity.getBlockTests().stream().map(BlockTestService::convertToBlockTestDto).collect(Collectors.toList());
 
     }
 
-    public StudentDto convertToStudentDto(Student student) {
+    public static StudentDto convertToStudentDto(Student student) {
         if (student == null) return null;
         return StudentDto.builder()
                 .firstname(student.getFirstname())

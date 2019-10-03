@@ -1,7 +1,10 @@
 package uz.owl.schooltest.service;
 
+import org.omg.CosNaming.NamingContextExtPackage.StringNameHelper;
 import org.springframework.stereotype.Service;
 import uz.owl.schooltest.dao.SubjectDao;
+import uz.owl.schooltest.dto.blocktest.BlockTestDto;
+import uz.owl.schooltest.dto.student.StudentDto;
 import uz.owl.schooltest.dto.subject.SubjectPayload;
 import uz.owl.schooltest.dto.subject.SubjectDto;
 import uz.owl.schooltest.entity.SCenter;
@@ -12,6 +15,7 @@ import uz.owl.schooltest.exception.CenterNotFoundException;
 import uz.owl.schooltest.exception.CoundtCreatedExeption;
 import uz.owl.schooltest.exception.NotFoudException;
 import uz.owl.schooltest.exception.UserNotFoundException;
+import uz.owl.schooltest.web.rest.ControllerTool;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -51,21 +55,40 @@ public class SubjectService {
         return subjectDtos;
     }
 
+
     public SubjectDto getSubjectDtoByUsernameAndCenternameAndSubjectname(String username, String centername, String subjectname) throws UserNotFoundException, CenterNotFoundException {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
         Subject byScenterAndName = subjectDao.findByScenterAndName(center, subjectname);
-        if (byScenterAndName == null) {
-            throw new NotFoudException("Subject Not Found");
-        }
+        ControllerTool.requireNotNull(byScenterAndName, "Subject Not found");
         return convertToSubjectDto(byScenterAndName);
+    }
+
+    @Transactional
+    public List<StudentDto> getSubjectStudents(String username, String centername, String subjectName) {
+        User user = userService.getUser(username);
+        SCenter center = sCenterService.getCenter(user, centername);
+        Subject subject = getSubjectByCenterAndName(center, subjectName);
+        ControllerTool.requireNotNull(subject, "Subject Not found");
+        List<StudentDto> collect = subject.getStudents().stream().map(StudentService::convertToStudentDto).collect(Collectors.toList());
+        return collect;
+    }
+
+    @Transactional
+    public List<BlockTestDto> getSubjectBlockTest(String username, String centername, String subjectName) {
+        User user = userService.getUser(username);
+        SCenter center = sCenterService.getCenter(user, centername);
+        Subject subject = getSubjectByCenterAndName(center, subjectName);
+        ControllerTool.requireNotNull(subject, "Subject Not found");
+        List<BlockTestDto> collect = subject.getBlockTests().stream().map(BlockTestService::convertToBlockTestDto).collect(Collectors.toList());
+        return collect;
     }
 
     /**
      * Uddate Subject
      *
-     * @param username          user username
-     * @param oldSubjectName    old subject which is will be update
+     * @param username       user username
+     * @param oldSubjectName old subject which is will be update
      * @param subjectPayload data
      * @return
      * @throws UserNotFoundException
@@ -95,11 +118,11 @@ public class SubjectService {
         subjectDao.deleteByScenterAndName(center, subjectname);
     }
 
-    Subject getSubjectByCenterAndName(SCenter sCenter, String name){
+    Subject getSubjectByCenterAndName(SCenter sCenter, String name) {
         return subjectDao.findByScenterAndName(sCenter, name);
     }
 
-    List<Subject> getPrimarySubject(User user, SCenter center){
+    List<Subject> getPrimarySubject(User user, SCenter center) {
         return subjectDao.findAllByScenterAndPrimarySubject(center, true);
     }
 

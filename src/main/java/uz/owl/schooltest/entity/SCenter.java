@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "scenter", uniqueConstraints = @UniqueConstraint(columnNames = {"name","author_id"}))
 public class SCenter {
+
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
     private Long id;
@@ -30,16 +31,16 @@ public class SCenter {
     private User author;
 
 
-    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "scenter", cascade = {CascadeType.ALL, CascadeType.REMOVE})
     private final List<Subject> subjects = new ArrayList<>();
 
-    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "scenter", cascade = {CascadeType.ALL, CascadeType.REMOVE})
     private final List<Guruh> guruhs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "scenter", cascade = {CascadeType.ALL, CascadeType.REMOVE})
     private final List<BlockTest> blockTests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "scenter", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "scenter", cascade = {CascadeType.ALL, CascadeType.REMOVE})
     private final List<Student> students = new ArrayList<>();
 
     @Override

@@ -10,6 +10,7 @@ import uz.owl.schooltest.dto.student.StudentDto;
 import uz.owl.schooltest.entity.*;
 import uz.owl.schooltest.exception.CenterNotFoundException;
 import uz.owl.schooltest.exception.NotFoudException;
+import uz.owl.schooltest.web.rest.ControllerTool;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
@@ -20,15 +21,15 @@ import java.util.stream.Collectors;
 @Service
 public class GroupService {
     @Autowired
-    private  GroupDao groupDao;
+    private GroupDao groupDao;
     @Autowired
-    private  UserService userService;
+    private UserService userService;
     @Autowired
-    private  SCenterService sCenterService;
+    private SCenterService sCenterService;
     @Autowired
-    private  StudentService studentService;
+    private StudentService studentService;
     @Autowired
-    private  BlockTestService blockTestService;
+    private BlockTestService blockTestService;
 
     public GroupService() {
     }
@@ -64,27 +65,28 @@ public class GroupService {
     }
 
     @Transactional
-    List<Student> getGuruhStudentEntities(SCenter sCenter, Long guruhId){
+    List<Student> getGuruhStudentEntities(SCenter sCenter, Long guruhId) {
         Guruh guruhEntity = getGuruhEntity(sCenter, guruhId);
+        ControllerTool.requireNotNull(guruhEntity, "Group Not Found");
         return guruhEntity.getStudents();
     }
 
-    public List<StudentDto> getGroupStudents(String username, String centername, Long guruhId){
+    public List<StudentDto> getGroupStudents(String username, String centername, Long guruhId) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
-        return getGuruhStudentEntities(center, guruhId).stream().map(studentService::convertToStudentDto).collect(Collectors.toList());
+        return getGuruhStudentEntities(center, guruhId).stream().map(StudentService::convertToStudentDto).collect(Collectors.toList());
     }
 
 
     @Transactional
-    List<BlockTest> getGuruhBlockTestEntities(SCenter sCenter, Long guruhId){
+    List<BlockTest> getGuruhBlockTestEntities(SCenter sCenter, Long guruhId) {
         return getGuruhEntity(sCenter, guruhId).getBlockTests();
     }
 
-    public List<BlockTestDto> getGroupBlockTest(String username, String centername, Long guruhId){
+    public List<BlockTestDto> getGroupBlockTest(String username, String centername, Long guruhId) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
-        return getGuruhBlockTestEntities(center, guruhId).stream().map(blockTestService::convertToBlockTestDto).collect(Collectors.toList());
+        return getGuruhBlockTestEntities(center, guruhId).stream().map(BlockTestService::convertToBlockTestDto).collect(Collectors.toList());
     }
 
     public GroupDto save(String username, String centername, String groupname) {
@@ -125,7 +127,7 @@ public class GroupService {
         Optional<Guruh> byId = groupDao.findById(groupid);
         byId.ifPresent(guruh -> {
             if (guruh.getScenter().getId().equals(center.getId())) {
-                groupDao.delete(byId.get());
+                groupDao.deleteGuruh(guruh.getId());
             }
         });
         byId.orElseThrow(() -> new NotFoudException("Group Not Found"));

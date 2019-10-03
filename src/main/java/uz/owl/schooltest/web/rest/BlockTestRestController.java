@@ -73,7 +73,7 @@ public class BlockTestRestController implements BlockTestProto {
     @DeleteMapping(RESOURCE_URL + "/{blockTestId}")
     public ResponseEntity<Resource<Message>> deleteBlockTest(Principal principal, @PathVariable String centername, @PathVariable Long blockTestId) {
         blockTestService.deleteBlockTest(principal.getName(), centername, blockTestId);
-        return ResponseEntity.ok(new Resource<Message>(new Message(200, "Created")));
+        return ResponseEntity.ok(new Resource<Message>(new Message(200, "Deleted")));
     }
 
 //    @Override
@@ -185,12 +185,12 @@ public class BlockTestRestController implements BlockTestProto {
                 }).collect(Collectors.toList());
     }
 
-    public void links(Resource resource, Principal principal, String centername, Long blockTestId) {
-        Link all_blocktest = linkTo(methodOn(getClass()).getAllBlockTest(principal, centername)).withRel("all_blocktest");
-        Link self = linkTo(methodOn(getClass()).getBlockTest(principal, centername, blockTestId)).withSelfRel();
-        Link subjects = linkTo(methodOn(getClass()).getSubjects(principal, centername, blockTestId)).withRel("subjects");
-        Link groups = linkTo(methodOn(getClass()).getGroups(principal, centername, blockTestId)).withRel("groups");
-        Link students = linkTo(methodOn(getClass()).getStudents(principal, centername, blockTestId)).withRel("students");
+    public static void links(Resource resource, Principal principal, String centername, Long blockTestId) {
+        Link all_blocktest = linkTo(methodOn(BlockTestRestController.class).getAllBlockTest(principal, centername)).withRel("all_blocktest");
+        Link self = linkTo(methodOn(BlockTestRestController.class).getBlockTest(principal, centername, blockTestId)).withSelfRel();
+        Link subjects = linkTo(methodOn(BlockTestRestController.class).getSubjects(principal, centername, blockTestId)).withRel("subjects");
+        Link groups = linkTo(methodOn(BlockTestRestController.class).getGroups(principal, centername, blockTestId)).withRel("groups");
+        Link students = linkTo(methodOn(BlockTestRestController.class).getStudents(principal, centername, blockTestId)).withRel("students");
 
         resource.add(all_blocktest);
         resource.add(self);

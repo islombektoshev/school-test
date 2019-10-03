@@ -47,7 +47,7 @@ public class GroupRestController implements GroupProto {
     @Override
     @GetMapping(RESOURCE_URI + "/{groupid}")
     public Resource<GroupDto> getSingleGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid) {
-        Resource<GroupDto>  groupDtoResource = new Resource<>(groupService.getSingle(principal.getName(), centername, groupid));
+        Resource<GroupDto> groupDtoResource = new Resource<>(groupService.getSingle(principal.getName(), centername, groupid));
         links(groupDtoResource, principal, centername, groupid);
         return groupDtoResource;
     }
@@ -63,13 +63,14 @@ public class GroupRestController implements GroupProto {
 
     @Override
     @PutMapping(RESOURCE_URI + "/{groupid}")
-    public ResponseEntity<Resource<Message>> updateGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid,@RequestBody GroupPayload payload) {
+    public ResponseEntity<Resource<Message>> updateGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid, @RequestBody GroupPayload payload) {
         GroupDto updateGroup = groupService.update(principal.getName(), centername, payload.getName(), groupid);
         return ResponseEntity.ok(new Resource<Message>(new Message(200, "Updated"))); // TODO: 9/25/2019 linklarni tayyorlash kerak
     }
 
     @Override
-    public List<Resource<StudentDto>> getGroupStudents(Principal principal, String centername, Long groupId) {
+    @GetMapping(RESOURCE_URI + "/{groupId}/students")
+    public List<Resource<StudentDto>> getGroupStudents(Principal principal, @PathVariable String centername, @PathVariable Long groupId) {
         List<StudentDto> guruhStudents = groupService.getGroupStudents(principal.getName(), centername, groupId);
         List<Resource<StudentDto>> collect = guruhStudents.stream().map(studentDto -> {
             Resource<StudentDto> resource = new Resource<>(studentDto);
@@ -80,28 +81,34 @@ public class GroupRestController implements GroupProto {
     }
 
     @Override
-    public List<Resource<BlockTestDto>> getGuruhBlockTests(Principal principal, String centernema, Long groupId) {
-        List<BlockTestDto> guruhBlockTest = groupService.getGroupBlockTest(principal.getName(), centernema, groupId);
+    @GetMapping(RESOURCE_URI + "/{groupId}/blocktest")
+    public List<Resource<BlockTestDto>> getGuruhBlockTests(Principal principal, @PathVariable String centername, @PathVariable Long groupId) {
+        List<BlockTestDto> guruhBlockTest = groupService.getGroupBlockTest(principal.getName(), centername, groupId);
         List<Resource<BlockTestDto>> collect = guruhBlockTest.stream().map(blockTestDto -> {
             Resource<BlockTestDto> resource = new Resource<>(blockTestDto);
-            blockTestRestController.links(resource, principal, centernema, blockTestDto.getId());
+            blockTestRestController.links(resource, principal, centername, blockTestDto.getId());
             return resource;
         }).collect(Collectors.toList());
         return collect;
     }
 
     @Override
-    @DeleteMapping(RESOURCE_URI + "/{groupid}")
-    public ResponseEntity<Resource<Message>> deleteGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid){
+    @DeleteMapping(RESOURCE_URI + "/{groupid}") // TODO: 10/2/2019 fix ManyToMany issue
+    public ResponseEntity<Resource<Message>> deleteGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid) {
         groupService.deleteByCenter(principal.getName(), centername, groupid);
         URI uri = linkTo(methodOn(getClass()).getAllGroups(principal, centername)).toUri();
         Message message = new Message(200, "Deleted").all(uri);
         return ResponseEntity.ok(new Resource(message));
     }
 
-    public static void links(Resource resource, Principal principal, String centername, Long groupId){
+    public static void links(Resource resource, Principal principal, String centername, Long groupId) {
         Link all_groups = linkTo(methodOn(GroupRestController.class).getAllGroups(principal, centername)).withRel("all_groups");
         Link self = linkTo(methodOn(GroupRestController.class).getSingleGroup(principal, centername, groupId)).withRel("self");
+        Link blocktest = linkTo(methodOn(GroupRestController.class).getGuruhBlockTests(principal, centername, groupId)).withRel("blocktest");
+        Link students = linkTo(methodOn(GroupRestController.class).getGroupStudents(principal, centername, groupId)).withRel("students");
+
+        resource.add(students);
+        resource.add(blocktest);
         resource.add(all_groups);
         resource.add(self); // TODO: 9/28/2019 qolgan linklarni qo'shish kerak
     }

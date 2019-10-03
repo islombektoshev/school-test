@@ -15,6 +15,7 @@ import uz.owl.schooltest.dto.student.StudentPayload;
 import uz.owl.schooltest.dto.student.StudentDto;
 import uz.owl.schooltest.dto.subject.SubjectDto;
 import uz.owl.schooltest.service.StudentService;
+import uz.owl.schooltest.service.SubjectService;
 import uz.owl.schooltest.web.Message;
 import uz.owl.schooltest.web.rest.proto.StudentProto;
 
@@ -81,7 +82,7 @@ public class StudentRestController implements StudentProto {
     }
 
     @Override
-    @DeleteMapping(RESURCE_URL + "/{studentId}")
+    @DeleteMapping(RESURCE_URL + "/{studentId}") // TODO: 10/2/2019 fix ManyToMany issue
     public ResponseEntity<Resource<Message>> deleteStudent(Principal principal, @PathVariable String centername, @PathVariable Long studentId) {
         studentService.delete(principal.getName(), centername, studentId);
         Resource<Message> message = new Resource<>(new Message(200, "Deleted"));
@@ -126,7 +127,11 @@ public class StudentRestController implements StudentProto {
     @GetMapping(RESURCE_URL + "/{studentId}/subjects")
     public List<Resource<SubjectDto>> getSubjects(Principal principal, @PathVariable String centername, @PathVariable Long studentId) {
         List<SubjectDto> subjects = studentService.getSubjects(principal.getName(), centername, studentId);
-        return subjects.stream().map(Resource<SubjectDto>::new).collect(Collectors.toList());
+        return subjects.stream().map(subjectDto -> {
+            Resource<SubjectDto> resource  = new Resource<>(subjectDto);
+            SubjectRestController.links(resource,principal, centername, subjectDto.getName());
+            return resource;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -158,16 +163,6 @@ public class StudentRestController implements StudentProto {
     }
 
     public static void links(Resource resource, Principal principal, String centername, Long studentId) {
-//        _links:{
-//            self:?
-//            subjects:
-//            groups:
-//            center:
-//            results:{
-//                System.out.println("kcmslkd");
-//            }
-//        }
-
         Link all_student = linkTo(methodOn(StudentRestController.class).getAllStudents(principal, centername)).withRel("all_student");
         Link student = linkTo(methodOn(StudentRestController.class).getStudent(principal, centername, studentId)).withRel("student");
         Link subjects = linkTo(methodOn(StudentRestController.class).getSubjects(principal, centername, studentId)).withRel("subjects");

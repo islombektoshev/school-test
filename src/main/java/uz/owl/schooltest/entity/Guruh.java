@@ -67,6 +67,10 @@ public class Guruh {
         return blockTests.add(blockTest);
     }
 
+    public void clearStudents() {
+        students.clear();
+    }
+
     public boolean removeBlockTest(Object o) {
         return blockTests.remove(o);
     }
