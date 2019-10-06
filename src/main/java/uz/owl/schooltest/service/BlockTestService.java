@@ -1,5 +1,6 @@
 package uz.owl.schooltest.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.owl.schooltest.dao.BlockTestDao;
 import uz.owl.schooltest.dto.blocktest.BlockTestDto;
@@ -19,20 +20,20 @@ import java.util.stream.Collectors;
 
 @Service
 public class BlockTestService {
-    private final UserService userService;
-    private final SCenterService sCenterService;
-    private final GroupService groupService;
-    private final SubjectService subjectService;
-    private final StudentService studentService;
-    private final BlockTestDao blockTestDao;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private SCenterService sCenterService;
+    @Autowired
+    private GroupService groupService;
+    @Autowired
+    private SubjectService subjectService;
+    @Autowired
+    private StudentService studentService;
+    @Autowired
+    private BlockTestDao blockTestDao;
 
-    public BlockTestService(UserService userService, SCenterService sCenterService, GroupService groupService, SubjectService subjectService, StudentService studentService, BlockTestDao blockTestDao) {
-        this.userService = userService;
-        this.sCenterService = sCenterService;
-        this.groupService = groupService;
-        this.subjectService = subjectService;
-        this.studentService = studentService;
-        this.blockTestDao = blockTestDao;
+    public BlockTestService() {
     }
 
     BlockTest getBlockTestEntity(String username, String centername, Long bId) {
