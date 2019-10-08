@@ -69,6 +69,7 @@ public class UserService implements UserDetailsService {
         try {
             userDao.save(user);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
         return user;

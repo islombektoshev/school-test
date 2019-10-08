@@ -10,6 +10,7 @@ import uz.owl.schooltest.service.UserService;
 
 import uz.owl.schooltest.web.Message;
 
+import javax.validation.Valid;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class UserRestController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity signUp(Principal principal, @RequestBody UserPayload userPayload) {
+    public ResponseEntity signUp(Principal principal,@Valid @RequestBody UserPayload userPayload) {
         UserDto userDto = userService.createUser(userPayload);
         if (userDto == null) {
             return ResponseEntity.badRequest().body(new Message(404, "Has User"));

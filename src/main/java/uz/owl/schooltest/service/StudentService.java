@@ -30,7 +30,7 @@ public class StudentService {
     private final UserService userService;
     private final SubjectService subjectService;
     @Autowired // o'chirma buni kerak!!!!
-    private  GroupService groupService;
+    private GroupService groupService;
     @Autowired
     private BlockTestService blockTestService;
     @Autowired
@@ -55,7 +55,7 @@ public class StudentService {
     }
 
     @Transactional
-    public XSSFWorkbook getAllStudentsExcel(String username, String centername){
+    public XSSFWorkbook getAllStudentsExcel(String username, String centername) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
         List<Student> students = center.getStudents();
@@ -108,11 +108,19 @@ public class StudentService {
         return convertToStudentDto(studentEntity);
     }
 
+    @Transactional
     public void delete(String username, String centername, Long studentId) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
         Student studentEntity = getStudentEntity(center, studentId);
         requireNotNull(studentEntity);
+        studentEntity.setGuruh(null);
+        List<Subject> subjects = studentEntity.getSubjects();
+        List<BlockTest> blockTests = studentEntity.getBlockTests();
+        subjects.forEach(subject -> subject.removeStudent(studentEntity));
+        blockTests.forEach(blockTest -> blockTest.removeStudent(studentEntity));
+        subjects.clear();
+        blockTests.clear();
         studentDao.delete(studentEntity);
     }
 
@@ -145,14 +153,14 @@ public class StudentService {
     }
 
     @Transactional
-    public void removeSubjectFromStudent(String username, String centername, Long studentId, String subjectName){
+    public void removeSubjectFromStudent(String username, String centername, Long studentId, String subjectName) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
         Student student = studentDao.findByScenterAndId(center, studentId);
         Subject subject = subjectService.getSubjectByCenterAndName(center, subjectName);
         requireNotNull(student, "Student not found");
         requireNotNull(subject, "Subject not found");
-        if(!student.getSubjects().contains(subject)) return;
+        if (!student.getSubjects().contains(subject)) return;
         student.removeSubject(subject);
         subject.removeStudent(student);
         studentDao.save(student);
@@ -203,7 +211,7 @@ public class StudentService {
     }
 
     @Transactional
-    public List<BlockTestDto> getBlockTest(String username, String centername, Long studentId){
+    public List<BlockTestDto> getBlockTest(String username, String centername, Long studentId) {
         User user = userService.getUser(username);
         SCenter center = sCenterService.getCenter(user, centername);
         Student studentEntity = getStudentEntity(center, studentId);

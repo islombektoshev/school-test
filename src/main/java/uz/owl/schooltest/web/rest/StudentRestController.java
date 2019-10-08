@@ -71,7 +71,7 @@ public class StudentRestController implements StudentProto {
 
     @Override
     @PutMapping(RESURCE_URL + "/{studentId}")
-    public ResponseEntity<Resource<Message>> updateStudent(Principal principal, @PathVariable String centername, @PathVariable Long studentId, @Valid  @RequestBody StudentPayload payload) {
+    public ResponseEntity<Resource<Message>> updateStudent(Principal principal, @PathVariable String centername, @PathVariable Long studentId, @Valid @RequestBody StudentPayload payload) {
         StudentDto studentDto = studentService.updateStudent(principal.getName(), centername, studentId, payload);
         Resource<Message> message = new Resource<>(new Message(200, "Updated"));
         links(message, principal, centername, studentDto.getId());
@@ -89,7 +89,7 @@ public class StudentRestController implements StudentProto {
 
     @Override
     @PostMapping(RESURCE_URL + "/{studentId}/groups")
-    public ResponseEntity<Resource<Message>> addGroup(Principal principal, @PathVariable String centername, @PathVariable Long studentId, @Valid  @RequestBody AddStudentToGroupPayload payload) {
+    public ResponseEntity<Resource<Message>> addGroup(Principal principal, @PathVariable String centername, @PathVariable Long studentId, @Valid @RequestBody AddStudentToGroupPayload payload) {
         GroupDto groupDto = studentService.addGroupToStudent(principal.getName(), centername, studentId, payload);
         Resource<Message> message = new Resource<>(new Message(200, String.valueOf(groupDto)));
         links(message, principal, centername, studentId);
@@ -98,7 +98,7 @@ public class StudentRestController implements StudentProto {
 
     @Override
     @PostMapping(RESURCE_URL + "/{studentId}/subjects")
-    public ResponseEntity<Resource<Message>> addSubject(Principal principal, @PathVariable String centername, @PathVariable Long studentId,@Valid  @RequestBody AddSubjectToStudentPayload payload) {
+    public ResponseEntity<Resource<Message>> addSubject(Principal principal, @PathVariable String centername, @PathVariable Long studentId, @Valid @RequestBody AddSubjectToStudentPayload payload) {
         StudentDto studentDto = studentService.addSubjectToStudent(principal.getName(), centername, studentId, payload);
         Resource<Message> resource = new Resource<>(new Message(201, "Subjects added"));
         links(resource, principal, centername, studentDto.getId());
@@ -125,23 +125,23 @@ public class StudentRestController implements StudentProto {
     public List<Resource<SubjectDto>> getSubjects(Principal principal, @PathVariable String centername, @PathVariable Long studentId) {
         List<SubjectDto> subjects = studentService.getSubjects(principal.getName(), centername, studentId);
         return subjects.stream().map(subjectDto -> {
-            Resource<SubjectDto> resource  = new Resource<>(subjectDto);
-            SubjectRestController.links(resource,principal, centername, subjectDto.getName());
+            Resource<SubjectDto> resource = new Resource<>(subjectDto);
+            SubjectRestController.links(resource, principal, centername, subjectDto.getName());
             return resource;
         }).collect(Collectors.toList());
     }
 
     @Override
     @DeleteMapping(RESURCE_URL + "/{studentId}/groups")
-    public ResponseEntity<?> removeGroup(Principal principal,@PathVariable String centername, @PathVariable Long studentId) {
+    public ResponseEntity<?> removeGroup(Principal principal, @PathVariable String centername, @PathVariable Long studentId) {
         studentService.removeGroupFromStudent(principal.getName(), centername, studentId);
         return ResponseEntity.ok().build();
     }
 
     @Override
     @DeleteMapping(RESURCE_URL + "/{studentId}/subjects")
-    public ResponseEntity<?> removeSubject(Principal principal,@PathVariable String centername, @PathVariable Long studentId, @Valid  @RequestBody AddSubjectToStudentPayload payload) {
-        payload.getSubjectName().forEach(subjectName ->{
+    public ResponseEntity<?> removeSubject(Principal principal, @PathVariable String centername, @PathVariable Long studentId, @Valid @RequestBody AddSubjectToStudentPayload payload) {
+        payload.getSubjectName().forEach(subjectName -> {
             studentService.removeSubjectFromStudent(principal.getName(), centername, studentId, subjectName);
         });
         return ResponseEntity.ok().build();
@@ -181,13 +181,9 @@ public class StudentRestController implements StudentProto {
         XSSFWorkbook allStudentsExcel = null;
         try {
             allStudentsExcel = studentService.getAllStudentsExcel(principal.getName(), centername);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
             allStudentsExcel.write(response.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Applicaton Error: " + e.getMessage());
         }
 
     }
