@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Data
@@ -24,7 +25,7 @@ public class Role {
     @Column(nullable = false, unique = true)
     private String rolename;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "roles")
     @JsonIgnore
     private final List<User> users = new ArrayList<>();
 
@@ -34,5 +35,19 @@ public class Role {
                 "id=" + id +
                 ", rolename='" + rolename + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return Objects.equals(id, role.id) &&
+                rolename.equals(role.rolename);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, rolename);
     }
 }

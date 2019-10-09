@@ -60,7 +60,7 @@ public class GroupRestController implements GroupProto {
 
     @Override
     @PutMapping(RESOURCE_URI + "/{groupid}")
-    public ResponseEntity<Resource<Message>> updateGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid, @RequestBody GroupPayload payload) {
+    public ResponseEntity<Resource<Message>> updateGroup(Principal principal, @PathVariable String centername, @PathVariable Long groupid,@Valid @RequestBody GroupPayload payload) {
         GroupDto updateGroup = groupService.update(principal.getName(), centername, payload.getName(), groupid);
         Resource<Message> updated = new Resource<>(new Message(200, "Updated"));
         links(updated, principal, centername, updateGroup.getId());

@@ -1,16 +1,19 @@
 package uz.owl.schooltest.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,7 +24,10 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Users")
+@Table(name = "Users", indexes = {
+        @Index(columnList = "id", name = "user_id_index"),
+        @Index(columnList = "username", name = "user_username_index")
+})
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,8 +51,17 @@ public class User implements UserDetails {
     @ColumnDefault("true")
     private boolean enable;
 
+    @CreationTimestamp
+    @ColumnDefault("current_timestamp")
+    private LocalDateTime createdDate;
 
-    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
+    // TODO: 10/9/2019 !!! set expired date time for lock account or set how much time work this account
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL})
+    private final List<AdminMessage> adminMessages = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.EAGER)
     private final List<Role> roles = new ArrayList<>();
 
     @OneToMany(mappedBy = "author", cascade = {CascadeType.MERGE, CascadeType.REMOVE, CascadeType.PERSIST})
@@ -74,6 +89,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+        System.out.println("User.isEnabled = " + enable);
         return enable;
     }
 

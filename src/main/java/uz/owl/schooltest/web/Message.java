@@ -5,12 +5,15 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class Message extends AbstractBaseMessage<Message>{
+public class Message extends AbstractBaseMessage<Message> {
     private int status;
     private String message;
+
     {
         setC(this);
     }
+
     public Message() {
     }
+
 }

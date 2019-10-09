@@ -3,6 +3,7 @@ package uz.owl.schooltest.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -15,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import uz.owl.schooltest.dao.UserDao;
 import uz.owl.schooltest.service.UserService;
 
 @Configuration
@@ -23,20 +25,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
     private final ObjectMapper objectMapper;
+    private final UserDao userDao;
 
     private static final String[] AUTH_WHITELIST = {
             "/swagger-resources/**",
             "/swagger-ui.html",
             "/v2/api-docs",
             "/webjars/**",
+            "/api/v1/has",
             "/api/v1/signup",
             "/api/v1/test"
 //            "/api/public"
     };
 
-    public SecurityConfig(UserService userService, ObjectMapper objectMapper) {
+    public SecurityConfig(UserService userService, ObjectMapper objectMapper, UserDao userDao) {
         this.userService = userService;
         this.objectMapper = objectMapper;
+        this.userDao = userDao;
     }
 
     @Override
@@ -57,10 +62,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/public").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/api/v1/admin").hasRole("ADMIN")
+                .antMatchers("/api/v1/has", "/api/v1/signup", "/api/v1/test").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/").hasAnyAuthority("GET_ONLY", "FULL_USER_ACCESS")
+                .antMatchers(HttpMethod.GET, "/api/v1/centers/**").hasAnyAuthority("GET_ONLY", "FULL_USER_ACCESS")
+                .antMatchers(HttpMethod.POST, "/api/v1/centers/**").hasAnyAuthority("POST_ONLY", "FULL_USER_ACCESS")
+                .antMatchers(HttpMethod.PUT, "/api/v1/centers/**").hasAnyAuthority("PUT_ONLY", "FULL_USER_ACCESS")
+                .antMatchers(HttpMethod.DELETE, "/api/v1/centers/**").hasAnyAuthority("DELETE_ONLY", "FULL_USER_ACCESS")
+                .antMatchers(HttpMethod.PATCH, "/api/v1/centers/**").hasAnyAuthority("PATCH_ONLY", "FULL_USER_ACCESS")
+//                .anyRequest().authenticated()
                 .and()
                 .addFilter(new JwtAuthentiocationFilter(authenticationManager(), objectMapper))
-                .addFilter(new JwtAuthorizationFilter(authenticationManager()))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), userDao))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         ;
     }

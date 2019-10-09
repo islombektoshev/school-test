@@ -13,6 +13,8 @@ import uz.owl.schooltest.entity.User;
 import uz.owl.schooltest.exception.UserNotFoundException;
 
 import javax.transaction.Transactional;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -35,7 +37,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User byUsername = userDao.findByUsername(s);
         if (byUsername == null) {
-            throw new UsernameNotFoundException("User Not Found!");
+            throw new UserNotFoundException("User Not Found!");
         }
         return byUsername;
     }
@@ -63,9 +65,8 @@ public class UserService implements UserDetailsService {
                 .firstname(firstname)
                 .lastname(lastname)
                 .build();
-        Role role_user = roleDao.findByRolename("ROLE_USER");
-        role_user.getUsers().add(user);
-        user.getRoles().add(role_user);
+        List<Role> allByRolename = roleDao.findAllByRolename(Arrays.asList("ROLE_USER", "GET_ONLY", "FULL_USER_ACCESS"));
+        user.getRoles().addAll(allByRolename);
         try {
             userDao.save(user);
         } catch (Exception e) {
@@ -75,7 +76,7 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public UserDto createUser(UserPayload p){
+    public UserDto createUser(UserPayload p) {
         User user = creatUserEntity(p.getUsername(), p.getPasswrod(), p.getFirstname(), p.getLastname());
         return converToUserPayload(user);
     }

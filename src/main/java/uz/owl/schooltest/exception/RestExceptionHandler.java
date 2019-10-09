@@ -1,5 +1,6 @@
 package uz.owl.schooltest.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,8 @@ import java.util.Date;
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
-    public void ifUserNotFound(UserNotFoundException e) {
-        System.out.println(e.getMessage());
+    public ResponseEntity<Message> ifUserNotFound(UserNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message(404, e.getMessage()));
     }
 
     @ExceptionHandler(CoundtCreatedExeption.class)

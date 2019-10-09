@@ -69,3 +69,10 @@ todo student methods
 
 
 
+
+
+todo    ADMIN PAGE
+    see all users
+    control user access <block, unblock, add and remove roles, authorities>
+    add new user(s)
+    delete user(s)

@@ -8,6 +8,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import uz.owl.schooltest.dao.UserDao;
+import uz.owl.schooltest.entity.Role;
+import uz.owl.schooltest.entity.User;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -18,10 +21,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
+
+    private final UserDao userDao;
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    public JwtAuthorizationFilter(AuthenticationManager authenticationManager) {
+    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, UserDao userDao) {
         super(authenticationManager);
+        this.userDao = userDao;
     }
 
     @Override
@@ -29,7 +35,9 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         String token = request.getHeader(SecurityConstants.TOKEN_HEADER);
         try {
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = getUsernamePasswordAuthenticationToken(request);
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            if (usernamePasswordAuthenticationToken != null) {
+                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            }
         } catch (ExpiredJwtException exception) {
             log.warn("Request to parse expired JWT : {} failed : {}", token, exception.getMessage());
         } catch (UnsupportedJwtException exception) {
@@ -40,10 +48,9 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             log.warn("Request to parse JWT with invalid signature : {} failed : {}", token, exception.getMessage());
         } catch (IllegalArgumentException exception) {
             log.warn("Request to parse empty or null JWT : {} failed : {}", token, exception.getMessage());
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             log.warn("Karochi qorqish kerakman ok!");
-        }
-        finally {
+        } finally {
             chain.doFilter(request, response);
         }
     }
@@ -53,8 +60,13 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         String tokenString = header.substring(SecurityConstants.TOKEN_PREFIX.length());
         Jws<Claims> claimsJws = Jwts.parser().setSigningKey(SecurityConstants.JWT_SECRET.getBytes()).parseClaimsJws(tokenString);
         String username = claimsJws.getBody().getSubject();
-        List<?> rol = (List<?>) claimsJws.getBody().get("rol");
-        List<SimpleGrantedAuthority> authority = rol.stream().map(r -> new SimpleGrantedAuthority((((String) r)))).collect(Collectors.toList());
-        return new UsernamePasswordAuthenticationToken(username, null, authority);
+        User byUsername = userDao.findByUsername(username);
+        if (!byUsername.isEnable()) {
+            return null;
+        }
+        List<Role> roles = byUsername.getRoles();
+        List<SimpleGrantedAuthority> authority = roles.stream().map(r -> new SimpleGrantedAuthority(r.getRolename())).collect(Collectors.toList());
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, null, authority);
+        return usernamePasswordAuthenticationToken;
     }
 }

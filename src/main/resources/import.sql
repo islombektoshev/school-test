@@ -1,15 +1,24 @@
 -- insert users
-insert into users(username, password) values ('islom', '1');
-insert into users(username, password) values ('behruz', '1');
+insert into users(username, password) values ('islom', '123456789');
+insert into users(username, password) values ('behruz', '123456789');
 
 -- insert roles
 insert into role(rolename) values ('ROLE_USER');
 insert into role(rolename) values ('ROLE_ADMIN');
+insert into role(rolename) values ('GET_ONLY');
+insert into role(rolename) values ('POST_ONLY');
+insert into role(rolename) values ('PUT_ONLY');
+insert into role(rolename) values ('PATCH_ONLY');
+insert into role(rolename) values ('FULL_USER_ACCESS');
 
 -- insert rels
-insert into role_users(roles_id, users_id) VALUES (1, 1);
-insert into role_users(roles_id, users_id) VALUES (2, 1);
-insert into role_users(roles_id, users_id) VALUES (1, 2);
+insert into users_roles(roles_id, users_id) VALUES (1, 1); -- ROLE_USER
+insert into users_roles(roles_id, users_id) VALUES (2, 1); -- ROLE_ADMIN
+insert into users_roles(roles_id, users_id) VALUES (3, 1); -- GET_ONLY
+insert into users_roles(roles_id, users_id) VALUES (7, 1); -- FULL_USER_ACCESS
+insert into users_roles(roles_id, users_id) VALUES (1, 2); -- ROLE_USER
+insert into users_roles(roles_id, users_id) VALUES (3, 2); -- GET_ONLY
+insert into users_roles(roles_id, users_id) VALUES (7, 2); -- FULL_USER_ACCESS
 
 -- insert scenter
 insert into scenter (id, caption, name, author_id) values (1, 'nimadir', 'first', 1);
