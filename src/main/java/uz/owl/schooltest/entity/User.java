@@ -55,7 +55,8 @@ public class User implements UserDetails {
     @ColumnDefault("current_timestamp")
     private LocalDateTime createdDate;
 
-    // TODO: 10/9/2019 !!! set expired date time for lock account or set how much time work this account
+    @Column(name = "payment_expired_date", nullable = false)
+    private LocalDateTime paymentExpiredDate;
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL})

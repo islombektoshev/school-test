@@ -18,6 +18,7 @@ import uz.owl.schooltest.exception.NotFoudException;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,9 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private RoleDao roleDao;
+
+    @Autowired
+    DateTimeFormatter dateFormatter;
 
     @Override
     public UserDto getByUserId(Long id) throws NotFoundException {
@@ -73,6 +77,7 @@ public class AdminServiceImpl implements AdminService {
                 .password(userPayload.getPassword())
                 .username(userPayload.getUsername())
                 .enable(userPayload.isEnable())
+                .paymentExpiredDate(userPayload.getPaymentExpiredDate())
                 .build();
         User savedUser = adminUserDao.save(user);
         return convert(user);
@@ -141,10 +146,12 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @Deprecated // TODO: 10/9/2019 write code and delete this line
+    @Deprecated
     public UserDto setExpiredDate(Long id, LocalDateTime localDateTime) {
-        // TODO: 10/9/2019 add expire data filed into User entity end impl this method
-        return null;
+        User userEntity = getUserEntity(id);
+        userEntity.setPaymentExpiredDate(localDateTime);
+        adminUserDao.save(userEntity);
+        return convert(userEntity);
     }
 
     @Override
@@ -187,6 +194,26 @@ public class AdminServiceImpl implements AdminService {
         return roles;
     }
 
+    @Override
+    public List<UserDto> getPaymentExpiredUsers() {
+        return adminUserDao.getAllExpired().stream().map(this::convert).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDto> getPaymentNotExpiredUsers() {
+        return adminUserDao.getAllNotExpired().stream().map(this::convert).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDto> getBlockedUsers() {
+        return adminUserDao.getAllByEnable(false).stream().map(this::convert).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDto> getNotBlockedUsers() {
+        return adminUserDao.getAllByEnable(true).stream().map(this::convert).collect(Collectors.toList());
+    }
+
     Role getRole(Long roleId) {
         return roleDao.findById(roleId).orElseThrow(() -> new NotFoudException("Role not found"));
     }
@@ -203,6 +230,7 @@ public class AdminServiceImpl implements AdminService {
                 .lastname(user.getLastname())
                 .createdDate(user.getCreatedDate())
                 .enable(user.isEnable())
+                .paymentExpiredDate(user.getPaymentExpiredDate())
                 .id(user.getId())
                 .build();
     }

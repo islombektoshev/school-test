@@ -5,8 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.owl.schooltest.admin.dto.adminmessage.AdminMessagePayload;
 import uz.owl.schooltest.admin.dto.signle.SingleId;
+import uz.owl.schooltest.admin.dto.time.TimeStamp;
 import uz.owl.schooltest.admin.dto.user.UserDto;
 import uz.owl.schooltest.admin.dto.user.UserPageDto;
+import uz.owl.schooltest.admin.dto.user.UserPayload;
 import uz.owl.schooltest.admin.service.AdminService;
 import uz.owl.schooltest.entity.AdminMessage;
 import uz.owl.schooltest.entity.Role;
@@ -39,6 +41,11 @@ public class AdminRestController {
     @GetMapping("/users")
     public UserPageDto getUsers(@RequestParam("start") int start, @RequestParam("count") int count) {
         return adminService.getUser(start, count);
+    }
+
+    @PostMapping("/users")
+    public UserDto addUser(@Valid @RequestBody UserPayload userPayload) {
+        return adminService.saveUser(userPayload);
     }
 
     @PostMapping("/users/{userId}/block")
@@ -101,4 +108,18 @@ public class AdminRestController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/users/{userId}/paymentExpiresDate")
+    public UserDto setExpiredDateTime(@PathVariable Long userId, @RequestBody TimeStamp paymentExpiredDate) {
+        return adminService.setExpiredDate(userId, paymentExpiredDate.getTime());
+    }
+
+    @GetMapping("/users/paymentExpired")
+    public List<UserDto> getPaymentExpiredUsers(@RequestParam Boolean q) {
+        return q ? adminService.getPaymentExpiredUsers() : adminService.getPaymentNotExpiredUsers();
+    }
+
+    @GetMapping("/users/blocked")
+    public List<UserDto> getBlocked(@RequestParam Boolean q) {
+        return q ? adminService.getBlockedUsers() : adminService.getNotBlockedUsers();
+    }
 }

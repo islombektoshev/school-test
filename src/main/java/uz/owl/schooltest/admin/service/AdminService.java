@@ -32,7 +32,7 @@ public interface AdminService {
 
     void deleteAdminMessages(Long userId, Long megId);
 
-    void deleteAllUserAdminMessages(Long  userId);
+    void deleteAllUserAdminMessages(Long userId);
 
     UserDto setExpiredDate(Long id, LocalDateTime localDateTime);
 
@@ -43,4 +43,12 @@ public interface AdminService {
     List<Role> addRoleToUser(Long userId, Long roleId);
 
     List<Role> removeRoleToUser(Long userId, Long roleId);
+
+    List<UserDto> getPaymentExpiredUsers();
+
+    List<UserDto> getPaymentNotExpiredUsers();
+
+    List<UserDto> getBlockedUsers();
+
+    List<UserDto> getNotBlockedUsers();
 }

@@ -13,6 +13,9 @@ import uz.owl.schooltest.entity.User;
 import uz.owl.schooltest.exception.UserNotFoundException;
 
 import javax.transaction.Transactional;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,13 +62,19 @@ public class UserService implements UserDetailsService {
 
 
     public User creatUserEntity(String username, String password, String firstname, String lastname) {
+        long currentTimeMillis = System.currentTimeMillis();
+        long defaultFreeTrialTime = 2592000000L; // 30 day
         User user = User.builder()
                 .username(username)
                 .password(password)
                 .firstname(firstname)
                 .lastname(lastname)
+                .paymentExpiredDate(LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(currentTimeMillis + defaultFreeTrialTime),
+                        ZoneId.systemDefault()
+                ))
                 .build();
-        List<Role> allByRolename = roleDao.findAllByRolename(Arrays.asList("ROLE_USER", "GET_ONLY", "FULL_USER_ACCESS"));
+        List<Role> allByRolename = roleDao.findAllByRolename(Arrays.asList("ROLE_USER", "GET_ONLY", "FULL_USER_ACCESS"));// For default user its allow to full access to user
         user.getRoles().addAll(allByRolename);
         try {
             userDao.save(user);
@@ -87,6 +96,8 @@ public class UserService implements UserDetailsService {
                 .username(user.getUsername())
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
+                .createdDate(user.getCreatedDate())
+                .paymentExpiredDate(user.getPaymentExpiredDate())
                 .build();
     }
 }

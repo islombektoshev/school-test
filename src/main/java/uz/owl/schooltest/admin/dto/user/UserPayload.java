@@ -1,11 +1,14 @@
 package uz.owl.schooltest.admin.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -24,8 +27,11 @@ public class UserPayload {
     @NotNull
     private String lastname;
 
+    @ApiModelProperty(name = "enable", example = "true")
     @NotNull
     private boolean enable;
 
-    // TODO: 10/9/2019 add expired date into this class
+    @ApiModelProperty(name = "time", example = "yyyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime paymentExpiredDate;
 }

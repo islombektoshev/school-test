@@ -55,6 +55,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
+    /**
+     * Bu yerrda asosan access lar qoyilgan security business logic {@link JwtAuthorizationFilter} da ham yozilgan
+     *
+     * @param http
+     * @throws Exception
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -62,7 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/public").permitAll()
-                .antMatchers("/api/v1/admin").hasRole("ADMIN")
+                .antMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .antMatchers("/api/v1/has", "/api/v1/signup", "/api/v1/test").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/").hasAnyAuthority("GET_ONLY", "FULL_USER_ACCESS")
                 .antMatchers(HttpMethod.GET, "/api/v1/centers/**").hasAnyAuthority("GET_ONLY", "FULL_USER_ACCESS")
